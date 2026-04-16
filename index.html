@@ -18,16 +18,18 @@
 
     <label for="html-element">
       HTMLElement
-      <div contenteditable="true" id="html-element"></div>
+      <div contenteditable id="html-element"></div>
     </label>
 
     <code>
       import { CRText, InputStreamAdapter, ChangeStreamAdapter, } from
-      './dist/index.js' const text = new CRText() const elements =
-      Array.from(document.querySelectorAll('body > *')).slice(0, 3)
-      text.addEventListener('change', (event) => { for (const element of
-      elements) { ChangeStreamAdapter(event, element) } }) for (const element of
-      elements) { element.addEventListener('beforeinput', (event) =>
+      './dist/index.js' const text = new CRText() const elements = [
+      document.getElementById('textarea-element'),
+      document.getElementById('input-element'),
+      document.getElementById('html-element'), ] text.addEventListener('change',
+      (event) => { for (const element of elements) { void
+      ChangeStreamAdapter(event, element) } }) for (const element of elements) {
+      element.addEventListener( 'beforeinput', (event) => void
       InputStreamAdapter(event, text) ) }
     </code>
     <nav class="links" aria-label="Project links">

@@ -4,7 +4,27 @@ export function ChangeStreamAdapter(
   changeEvent: CustomEvent<CRListChange<string>>,
   htmlElement: HTMLElement
 ): void {
-  console.log(changeEvent.detail)
+  const entries = Object.entries(changeEvent.detail).sort(
+    ([a], [b]) => Number(b) - Number(a)
+  )
+
+  if (
+    htmlElement instanceof HTMLInputElement ||
+    htmlElement instanceof HTMLTextAreaElement
+  ) {
+    for (const [key, value] of entries) {
+      const index = Number(key)
+
+      if (value === undefined) {
+        htmlElement.setRangeText('', index, index + 1, 'end')
+      } else {
+        htmlElement.setRangeText(value, index, index + 1, 'end')
+      }
+    }
+
+    return
+  }
+
   const textNode =
     htmlElement.firstChild instanceof Text
       ? htmlElement.firstChild
@@ -13,16 +33,13 @@ export function ChangeStreamAdapter(
           htmlElement.firstChild
         )
 
-  for (const [key, value] of Object.entries(changeEvent.detail)) {
+  for (const [key, value] of entries) {
     const index = Number(key)
 
     if (value === undefined) {
       textNode.deleteData(index, 1)
-      continue
-    }
-    if (typeof value === 'string') {
+    } else {
       textNode.replaceData(index, 1, value)
-      continue
     }
   }
 }

@@ -5,16 +5,21 @@ import {
 } from './dist/index.js'
 
 const text = new CRText()
-const elements = Array.from(document.querySelectorAll('body > *')).slice(0, 3)
+const elements = [
+  document.getElementById('textarea-element'),
+  document.getElementById('input-element'),
+  document.getElementById('html-element'),
+]
 
 text.addEventListener('change', (event) => {
   for (const element of elements) {
-    ChangeStreamAdapter(event, element)
+    void ChangeStreamAdapter(event, element)
   }
 })
 
 for (const element of elements) {
-  element.addEventListener('beforeinput', (event) =>
-    InputStreamAdapter(event, text)
+  element.addEventListener(
+    'beforeinput',
+    (event) => void InputStreamAdapter(event, text)
   )
 }

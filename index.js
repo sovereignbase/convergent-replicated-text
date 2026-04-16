@@ -1027,7 +1027,7 @@ var CRText = class {
   }
   /**
    *
-   * @param index
+   * @param index  Inclusive
    * @param removeCount
    * @returns
    */
@@ -1191,35 +1191,49 @@ function InputStreamAdapter(beforeInputEvent, crText) {
   }
 }
 function ChangeStreamAdapter(changeEvent, htmlElement) {
-  console.log(changeEvent.detail);
+  const entries = Object.entries(changeEvent.detail).sort(
+    ([a], [b]) => Number(b) - Number(a)
+  );
+  if (htmlElement instanceof HTMLInputElement || htmlElement instanceof HTMLTextAreaElement) {
+    for (const [key, value] of entries) {
+      const index = Number(key);
+      if (value === void 0) {
+        htmlElement.setRangeText("", index, index + 1, "end");
+      } else {
+        htmlElement.setRangeText(value, index, index + 1, "end");
+      }
+    }
+    return;
+  }
   const textNode = htmlElement.firstChild instanceof Text ? htmlElement.firstChild : htmlElement.insertBefore(
     htmlElement.ownerDocument.createTextNode(""),
     htmlElement.firstChild
   );
-  for (const [key, value] of Object.entries(changeEvent.detail)) {
+  for (const [key, value] of entries) {
     const index = Number(key);
     if (value === void 0) {
       textNode.deleteData(index, 1);
-      continue;
-    }
-    if (typeof value === "string") {
+    } else {
       textNode.replaceData(index, 1, value);
-      continue;
     }
   }
 }
 
 // in-browser-testing-libs.js
 var text = new CRText();
-var elements = Array.from(document.querySelectorAll("body > *")).slice(0, 3);
+var elements = [
+  document.getElementById("textarea-element"),
+  document.getElementById("input-element"),
+  document.getElementById("html-element")
+];
 text.addEventListener("change", (event) => {
   for (const element of elements) {
-    ChangeStreamAdapter(event, element);
+    void ChangeStreamAdapter(event, element);
   }
 });
 for (const element of elements) {
   element.addEventListener(
     "beforeinput",
-    (event) => InputStreamAdapter(event, text)
+    (event) => void InputStreamAdapter(event, text)
   );
 }

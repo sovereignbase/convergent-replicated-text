@@ -67,7 +67,7 @@ export class CRText {
   }
   /**
    *
-   * @param index
+   * @param index  Inclusive
    * @param removeCount
    * @returns
    */
