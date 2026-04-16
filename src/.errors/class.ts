@@ -1,12 +1,12 @@
-export type PackageNameErrorCode = 'EXAMPLE_ERROR_CODE'
+export type CRTextErrorCode = 'BAD_PARAMS'
 
-export class PackageNameError extends Error {
-  readonly code: PackageNameErrorCode
+export class CRTextError extends Error {
+  readonly code: CRTextErrorCode
 
-  constructor(code: PackageNameErrorCode, message?: string) {
+  constructor(code: CRTextErrorCode, message?: string) {
     const detail = message ?? code
-    super(`{@z-base/package-name} ${detail}`)
+    super(`{@sovereignbase/convergent-replicated-text} ${detail}`)
     this.code = code
-    this.name = 'PackageNameError'
+    this.name = 'CRTextError'
   }
 }

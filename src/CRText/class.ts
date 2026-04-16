@@ -1,0 +1,174 @@
+import {
+  __create,
+  __read,
+  __update,
+  __delete,
+  __snapshot,
+  type CRListState,
+  type CRListSnapshot,
+} from '@sovereignbase/convergent-replicated-list'
+import { CRTextError } from '../.errors/class.js'
+import { transformStringToGraphemeArray } from '../.helpers/index.js'
+import type { CRTextEventMap, CRTextEventListenerFor } from '../.types/index.js'
+
+export class CRText {
+  declare private readonly state: CRListState<string>
+  declare private readonly eventTarget: EventTarget
+  constructor(snapshot?: CRListSnapshot<string>) {
+    Object.defineProperties(this, {
+      state: {
+        value: __create<string>(snapshot),
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      },
+      eventTarget: {
+        value: new EventTarget(),
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      },
+    })
+  }
+  /**
+   * The current number of characters.
+   */
+  get size(): number {
+    return this.state.size
+  }
+  /**
+   *
+   * @param index
+   * @param chars
+   * @returns
+   */
+  insertAfter(index: number, chars: string): void {
+    if (typeof index !== 'number' || typeof chars !== 'string')
+      throw new CRTextError(
+        'BAD_PARAMS',
+        '`index` must be typeof number and `chars` must be typeof string.'
+      )
+    const result = __update<string>(
+      index,
+      transformStringToGraphemeArray(chars),
+      this.state,
+      'after'
+    )
+    if (!result) return
+    const { delta, change } = result
+    if (delta)
+      void this.eventTarget.dispatchEvent(
+        new CustomEvent('delta', { detail: delta })
+      )
+    if (change)
+      void this.eventTarget.dispatchEvent(
+        new CustomEvent('change', { detail: change })
+      )
+  }
+  /**
+   *
+   * @param index
+   * @param removeCount
+   * @returns
+   */
+  removeAfter(index: number, removeCount: number) {
+    if (typeof index !== 'number' || typeof removeCount !== 'number')
+      throw new CRTextError(
+        'BAD_PARAMS',
+        '`index` must be typeof number and `removeCount` must be typeof number.'
+      )
+    const result = __delete<string>(this.state, index, index + removeCount)
+    if (!result) return
+    const { delta, change } = result
+    if (delta)
+      void this.eventTarget.dispatchEvent(
+        new CustomEvent('delta', { detail: delta })
+      )
+    if (change)
+      void this.eventTarget.dispatchEvent(
+        new CustomEvent('change', { detail: change })
+      )
+  }
+  /**
+   * Returns a detached structured-clone-compatible snapshot of this list.
+   *
+   * Called automatically by `JSON.stringify`.
+   */
+  toJSON(): CRListSnapshot<string> {
+    return __snapshot<string>(this.state)
+  }
+  /**
+   * Returns this snapshot as a JSON string.
+   */
+  toString(): string {
+    return JSON.stringify(this)
+  }
+  /**
+   * Iterates over detached copies of the current live values in index order.
+   */
+  *[Symbol.iterator](): IterableIterator<string> {
+    for (let index = 0; index < this.size; index++) {
+      const value = __read<string>(index, this.state)
+      if (typeof value !== 'string') continue
+      yield value
+    }
+  }
+
+  valueOf(): string {
+    return [...this].join('')
+  }
+
+  [Symbol.toPrimitive](): string {
+    return [...this].join('')
+  }
+  /**
+   * Returns the Node.js console inspection representation.
+   */
+  [Symbol.for('nodejs.util.inspect.custom')](): string {
+    return this.valueOf()
+  }
+  /**
+   * Returns the Deno console inspection representation.
+   */
+  [Symbol.for('Deno.customInspect')](): string {
+    return this.valueOf()
+  }
+
+  /**
+   * Registers an event listener.
+   *
+   * @param type - The event type to listen for.
+   * @param listener - The listener to register.
+   * @param options - Listener registration options.
+   */
+  addEventListener<K extends keyof CRTextEventMap>(
+    type: K,
+    listener: CRTextEventListenerFor<K> | null,
+    options?: boolean | AddEventListenerOptions
+  ): void {
+    this.eventTarget.addEventListener(
+      type,
+      listener as EventListenerOrEventListenerObject | null,
+      options
+    )
+  }
+
+  /**
+   * Removes an event listener.
+   *
+   * @param type - The event type to stop listening for.
+   * @param listener - The listener to remove.
+   * @param options - Listener removal options.
+   */
+  removeEventListener<K extends keyof CRTextEventMap>(
+    type: K,
+    listener: CRTextEventListenerFor<K> | null,
+    options?: boolean | EventListenerOptions
+  ): void {
+    this.eventTarget.removeEventListener(
+      type,
+      listener as EventListenerOrEventListenerObject | null,
+      options
+    )
+  }
+}

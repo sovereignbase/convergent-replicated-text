@@ -65,9 +65,7 @@
     "wrangler": "^4.79.0"
   },
   "dependencies": {
-    "@sovereignbase/bytecodec": "^1.5.1",
-    "@sovereignbase/cryptosuite": "^2.0.5",
-    "@sovereignbase/observed-remove-set": "^1.0.1"
+    "@sovereignbase/convergent-replicated-list": "^1.0.6"
   },
   "repository": {
     "type": "git",
