@@ -85,9 +85,12 @@ export function InputStreamAdapter(
   if (!result) return
   const { insert, remove } = result
   if (insert) {
-    crText.insertAfter(insert.index, insert.characters)
+    let index = insert.index
+    if (index < 0) return
+    if (index > 0) index--
+    void crText.insertAfter(index, insert.characters)
   }
   if (remove) {
-    crText.removeAfter(remove.index, remove.removeCount)
+    void crText.removeAfter(remove.index, remove.removeCount)
   }
 }

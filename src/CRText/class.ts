@@ -4,8 +4,13 @@ import {
   __update,
   __delete,
   __snapshot,
+  __garbageCollect,
   type CRListState,
   type CRListSnapshot,
+  type CRListDelta,
+  type CRListAck,
+  __acknowledge,
+  __merge,
 } from '@sovereignbase/convergent-replicated-list'
 import { CRTextError } from '../.errors/class.js'
 import { transformStringToGraphemeArray } from '../.helpers/index.js'
@@ -88,6 +93,32 @@ export class CRText {
       void this.eventTarget.dispatchEvent(
         new CustomEvent('change', { detail: change })
       )
+  }
+  merge(delta: CRListDelta<string>) {
+    const change = __merge(this.state, delta)
+    if (change)
+      void this.eventTarget.dispatchEvent(
+        new CustomEvent('change', { detail: change })
+      )
+  }
+  acknowledge() {
+    const ack = __acknowledge(this.state)
+    if (ack) {
+      void this.eventTarget.dispatchEvent(
+        new CustomEvent('ack', { detail: ack })
+      )
+    }
+  }
+  garbageCollect(frontiers: Array<CRListAck>) {
+    void __garbageCollect(frontiers, this.state)
+  }
+  snapshot() {
+    const snapshot = __snapshot<string>(this.state)
+    if (snapshot) {
+      this.eventTarget.dispatchEvent(
+        new CustomEvent('snapshot', { detail: snapshot })
+      )
+    }
   }
   /**
    * Returns a detached structured-clone-compatible snapshot of this list.

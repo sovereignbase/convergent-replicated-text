@@ -4,50 +4,330 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Convergent Replicated Text (CR-Text) demo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+        background: #000;
+        color: #fff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(
+            circle at top,
+            rgba(255, 255, 255, 0.1),
+            transparent 36%
+          ),
+          #000;
+        color: #fff;
+      }
+
+      main {
+        width: min(100%, 42rem);
+        margin: 0 auto;
+        padding: 1.25rem;
+      }
+
+      .shell {
+        display: grid;
+        gap: 1.25rem;
+        padding: 1.25rem;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 1.25rem;
+        background: rgba(255, 255, 255, 0.04);
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.45);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 8vw, 3.4rem);
+        line-height: 0.95;
+      }
+
+      .lede {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.76);
+        line-height: 1.6;
+      }
+
+      .controls {
+        display: grid;
+        gap: 1rem;
+      }
+
+      label {
+        display: grid;
+        gap: 0.55rem;
+        font-size: 0.95rem;
+      }
+
+      input,
+      button,
+      a {
+        border-radius: 999px;
+      }
+
+      input,
+      textarea,
+      [contenteditable] {
+        width: 100%;
+        padding: 0.9rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: #050505;
+        color: #fff;
+        font: inherit;
+      }
+
+      input::placeholder,
+      textarea::placeholder {
+        color: rgba(255, 255, 255, 0.38);
+      }
+
+      textarea {
+        min-height: 8rem;
+        resize: vertical;
+        border-radius: 1rem;
+      }
+
+      [contenteditable] {
+        min-height: 8rem;
+        border-radius: 1rem;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+        outline: none;
+      }
+
+      [contenteditable]:focus,
+      input:focus,
+      textarea:focus {
+        border-color: rgba(255, 255, 255, 0.28);
+      }
+
+      .actions {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      button {
+        width: 100%;
+        padding: 0.95rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: #fff;
+        color: #000;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: transparent;
+        color: #fff;
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: progress;
+      }
+
+      .status {
+        margin: 0;
+        min-height: 1.5rem;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .result {
+        display: grid;
+        gap: 0.5rem;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .result-label {
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      output {
+        display: block;
+        overflow-wrap: anywhere;
+        font-family: 'IBM Plex Mono', 'Cascadia Code', monospace;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      pre {
+        margin: 0;
+        overflow: auto;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      pre code.hljs {
+        padding: 1rem 1.125rem;
+        background: transparent;
+      }
+
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .links a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        min-height: 2.5rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #fff;
+        text-decoration: none;
+      }
+
+      .links img {
+        width: 1rem;
+        height: 1rem;
+        flex: 0 0 1rem;
+      }
+
+      @media (min-width: 40rem) {
+        main {
+          padding: 2rem;
+        }
+
+        .shell {
+          padding: 1.75rem;
+        }
+
+        .actions {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
   </head>
   <body>
-    <label for="textarea-element">
-      HTMLTextareaElement
-      <textarea id="textarea-element"></textarea>
-    </label>
+    <main>
+      <section class="shell">
+        <h1>JOU</h1>
 
-    <label for="input-element">
-      HTMLInputElement
-      <input type="text" id="input-element" />
-    </label>
+        <div class="controls">
+          <label for="textarea-element">
+            HTMLTextareaElement
+            <textarea id="textarea-element"></textarea>
+          </label>
 
-    <label for="html-element">
-      HTMLElement
-      <div contenteditable id="html-element"></div>
-    </label>
+          <label for="input-element">
+            HTMLInputElement type text
+            <input type="text" id="input-element" />
+          </label>
 
-    <code>
-      import { CRText, InputStreamAdapter, ChangeStreamAdapter, } from
-      './dist/index.js' const text = new CRText() const elements = [
-      document.getElementById('textarea-element'),
-      document.getElementById('input-element'),
-      document.getElementById('html-element'), ] text.addEventListener('change',
-      (event) => { for (const element of elements) { void
-      ChangeStreamAdapter(event, element) } }) for (const element of elements) {
-      element.addEventListener( 'beforeinput', (event) => void
-      InputStreamAdapter(event, text) ) }
-    </code>
-    <nav class="links" aria-label="Project links">
-      <a href="https://jsr.io/@sovereignbase/convergent-replicated-text">
-        <img src="https://cdn.simpleicons.org/jsr/white" alt="" />
-        jsr
-      </a>
-      <a
-        href="https://www.npmjs.com/package/@sovereignbase/convergent-replicated-text"
-      >
-        <img src="https://cdn.simpleicons.org/npm/white" alt="" />
-        npm
-      </a>
-      <a href="https://github.com/sovereignbase/convergent-replicated-text">
-        <img src="https://cdn.simpleicons.org/github/white" alt="" />
-        GitHub
-      </a>
-    </nav>
+          <label for="html-element">
+            HTMLElement with contenteditable
+            <div contenteditable id="html-element"></div>
+          </label>
+        </div>
+
+        <pre><code class="language-javascript">
+import {
+  CRText,
+  InputStreamAdapter,
+  ChangeStreamAdapter,
+} from '@sovereignbase/convergent-replicated-text'
+
+import { StationClient } from '@sovereignbase/station-client'
+
+const station = new StationClient()
+const snapshot = JSON.parse(localStorage.getItem('state')) ?? undefined
+const frontiers = JSON.parse(localStorage.getItem('frontiers')) ?? undefined
+
+const text = new CRText(snapshot)
+
+if (frontiers) {
+  void text.garbageCollect(frontiers)
+}
+
+text.addEventListener('snapshot', (ev) => {
+  void localStorage.setItem('state', JSON.stringify(ev.detail))
+})
+
+text.addEventListener('ack', (ev) => {
+  void localStorage.setItem('frontiers', JSON.stringify([ev.detail]))
+})
+
+const elements = [
+  document.getElementById('textarea-element'),
+  document.getElementById('input-element'),
+  document.getElementById('html-element'),
+]
+
+text.addEventListener('change', (event) => {
+  for (const element of elements) {
+    void ChangeStreamAdapter(event, element)
+  }
+  void text.snapshot()
+  void text.acknowledge()
+})
+
+for (const element of elements) {
+  element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement
+    ? (element.value = text)
+    : (element.textContent = text)
+
+  void element.addEventListener(
+    'beforeinput',
+    (event) => void InputStreamAdapter(event, text)
+  )
+}
+
+text.addEventListener('delta', (ev) => {
+  station.relay(ev.detail)
+})
+
+station.addEventListener('message', (ev) => {
+  text.merge(ev.detail)
+})
+</code></pre>
+
+        <nav class="links" aria-label="Project links">
+          <a href="https://jsr.io/@sovereignbase/convergent-replicated-text">
+            <img src="https://cdn.simpleicons.org/jsr/white" alt="" />
+            jsr
+          </a>
+          <a
+            href="https://www.npmjs.com/package/@sovereignbase/convergent-replicated-text"
+          >
+            <img src="https://cdn.simpleicons.org/npm/white" alt="" />
+            npm
+          </a>
+          <a href="https://github.com/sovereignbase/convergent-replicated-text">
+            <img src="https://cdn.simpleicons.org/github/white" alt="" />
+            GitHub
+          </a>
+        </nav>
+      </section>
+    </main>
+
     <script type="module" src="index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>
+      hljs.highlightAll()
+    </script>
   </body>
 </html>

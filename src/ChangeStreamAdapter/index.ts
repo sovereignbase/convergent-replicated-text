@@ -22,14 +22,12 @@ export function ChangeStreamAdapter(
     for (const [key, value] of inserts) {
       if (typeof value === 'string') {
         let index = Number(key)
-        if (index !== htmlElement.value.length) index--
         void htmlElement.setRangeText(value, index, index, 'end')
       }
     }
 
     return
   }
-
   const textNode =
     htmlElement.firstChild instanceof Text
       ? htmlElement.firstChild
@@ -38,19 +36,34 @@ export function ChangeStreamAdapter(
           htmlElement.firstChild
         )
 
+  let caretOffset = textNode.length
+
   for (const [key, value] of removals) {
     const index = Number(key)
 
     if (value === undefined) {
       textNode.deleteData(index, 1)
+      caretOffset = index
     }
   }
 
   for (const [key, value] of inserts) {
-    let index = Number(key)
     if (typeof value === 'string') {
-      if (index !== textNode.length) index--
+      let index = Number(key)
       textNode.insertData(index, value)
+      caretOffset = index + value.length
     }
   }
+
+  const selection = htmlElement.ownerDocument.defaultView?.getSelection()
+  if (!selection) return
+
+  const range = htmlElement.ownerDocument.createRange()
+  const clampedOffset = Math.max(0, Math.min(caretOffset, textNode.length))
+
+  range.setStart(textNode, clampedOffset)
+  range.collapse(true)
+
+  selection.removeAllRanges()
+  selection.addRange(range)
 }
