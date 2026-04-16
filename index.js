@@ -1192,21 +1192,20 @@ function InputStreamAdapter(beforeInputEvent, crText) {
 }
 function ChangeStreamAdapter(changeEvent, htmlElement) {
   const entries = Object.entries(changeEvent.detail);
-  const removals = [...entries].sort(
-    ([a], [b]) => Number(b) - Number(a)
-  );
+  const removals = [...entries].sort(([a], [b]) => Number(b) - Number(a));
   const inserts = [...entries].sort(([a], [b]) => Number(a) - Number(b));
   if (htmlElement instanceof HTMLInputElement || htmlElement instanceof HTMLTextAreaElement) {
     for (const [key, value] of removals) {
       const index = Number(key);
       if (value === void 0) {
-        htmlElement.setRangeText("", index, index + 1, "end");
+        void htmlElement.setRangeText("", index, index + 1, "end");
       }
     }
     for (const [key, value] of inserts) {
       if (typeof value === "string") {
-        const index = Number(key);
-        htmlElement.setRangeText(value, index, index, "end");
+        let index = Number(key);
+        if (index !== htmlElement.value.length) index--;
+        void htmlElement.setRangeText(value, index, index, "end");
       }
     }
     return;
@@ -1222,8 +1221,10 @@ function ChangeStreamAdapter(changeEvent, htmlElement) {
     }
   }
   for (const [key, value] of inserts) {
+    let index = Number(key);
     if (typeof value === "string") {
-      textNode.insertData(Number(key), value);
+      if (index !== textNode.length) index--;
+      textNode.insertData(index, value);
     }
   }
 }
