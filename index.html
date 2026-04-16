@@ -3,11 +3,201 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Convergent Replicated Text (CR-Text) demo</title>
+    <title>Convergent Replicated Text (CR-Text)</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"
     />
+    <meta
+      name="description"
+      content="Browser demo for @sovereignbase/convergent-replicated-text, a delta CRDT for text value state."
+    />
+    <meta
+      name="keywords"
+      content="
+    crdt,
+    text,
+    replicated,
+    convergent,
+    local-first,
+    distributed-systems,
+    delta-sync,
+    gossip,
+    typescript,
+    sovereignbase"
+    />
+    <meta name="author" content="Jori Lehtinen" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta name="application-name" content="convergent-replicated-text" />
+    <link
+      rel="canonical"
+      href="https://sovereignbase.dev/convergent-replicated-text/"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://sovereignbase.dev/sovereignbase_logo.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="https://sovereignbase.dev/sovereignbase_logo.png"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="Sovereignbase" />
+    <meta property="og:title" content="Convergent Replicated Text (CR-Text)" />
+    <meta
+      property="og:description"
+      content="Browser demo for @sovereignbase/convergent-replicated-text, a delta CRDT for text value state."
+    />
+    <meta
+      property="og:url"
+      content="https://sovereignbase.dev/convergent-replicated-text/"
+    />
+    <meta
+      property="og:image"
+      content="https://sovereignbase.dev/sovereignbase_social_sharing_image.png"
+    />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Convergent Replicated Text (CR-Text) browser demo"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Convergent Replicated Text (CR-Text)" />
+    <meta
+      name="twitter:description"
+      content="Browser demo for @sovereignbase/convergent-replicated-text, a delta CRDT for text value state."
+    />
+    <meta
+      name="twitter:image"
+      content="https://sovereignbase.dev/sovereignbase_social_sharing_image.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Convergent Replicated Text (CR-Text) browser demo"
+    />
+    <meta name="twitter:creator" content="@jortsupetterson" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/#organization",
+            "name": "Sovereignbase",
+            "url": "https://github.com/sovereignbase",
+            "alternateName": ["@sovereignbase"],
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://sovereignbase.dev/sovereignbase_logo.png",
+              "width": 320,
+              "height": 320
+            },
+            "sameAs": [
+              "https://github.com/sovereignbase",
+              "https://jsr.io/@sovereignbase",
+              "https://www.npmjs.com/org/sovereignbase"
+            ]
+          },
+          {
+            "@type": "Person",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/#author",
+            "name": "Jori Lehtinen",
+            "url": "https://github.com/jortsupetterson",
+            "alternateName": ["jortsupetterson", "@jortsupetterson"],
+            "sameAs": [
+              "https://github.com/jortsupetterson",
+              "https://www.npmjs.com/~jortsupetterson",
+              "https://jsr.io/user/ab186a13-a64f-429e-a757-927aa4fa6e6c",
+              "https://linkedin.com/in/jortsupetterson",
+              "https://x.com/jortsupetterson",
+              "https://www.youtube.com/@jortsupetterson"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/#website",
+            "url": "https://sovereignbase.dev/convergent-replicated-text/",
+            "name": "convergent-replicated-text",
+            "inLanguage": "en",
+            "publisher": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/#organization"
+            }
+          },
+          {
+            "@type": "SoftwareSourceCode",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/#software",
+            "name": "@sovereignbase/convergent-replicated-text",
+            "alternateName": ["convergent-replicated-text"],
+            "url": "https://sovereignbase.dev/convergent-replicated-text/",
+            "description": "Convergent Replicated Text (CR-Text), a delta CRDT for text value state.",
+            "codeRepository": "https://github.com/sovereignbase/convergent-replicated-text",
+            "license": "https://www.apache.org/licenses/LICENSE-2.0",
+            "programmingLanguage": ["TypeScript", "JavaScript"],
+            "runtimePlatform": ["Web Browser", "Web Worker"],
+            "keywords": [
+              "crdt",
+              "text",
+              "replicated",
+              "convergent",
+              "local-first",
+              "distributed-systems",
+              "delta-sync",
+              "gossip",
+              "typescript",
+              "sovereignbase"
+            ],
+            "image": "https://sovereignbase.dev/sovereignbase_social_sharing_image.png",
+            "isAccessibleForFree": true,
+            "author": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/#author"
+            },
+            "maintainer": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/#organization"
+            },
+            "publisher": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/#organization"
+            },
+            "sameAs": [
+              "https://jsr.io/@sovereignbase/convergent-replicated-text",
+              "https://www.npmjs.com/package/@sovereignbase/convergent-replicated-text"
+            ]
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/#webpage",
+            "url": "https://sovereignbase.dev/convergent-replicated-text/",
+            "name": "Sovereignbase station client",
+            "description": "Browser demo for @sovereignbase/convergent-replicated-text, a realtime client that synchronizes state between browser tabs.",
+            "inLanguage": "en",
+            "isPartOf": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/#website"
+            },
+            "about": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/#software"
+            },
+            "author": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/#author"
+            },
+            "publisher": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/#organization"
+            },
+            "primaryImageOfPage": {
+              "@type": "ImageObject",
+              "url": "https://sovereignbase.dev/sovereignbase_social_sharing_image.png",
+              "width": 1200,
+              "height": 630
+            }
+          }
+        ]
+      }
+    </script>
     <style>
       :root {
         color-scheme: dark;
@@ -229,21 +419,24 @@
   <body>
     <main>
       <section class="shell">
-        <h1>JOU</h1>
+        <h1>A text crdt for Sovereignbase</h1>
+        <p class="lede">
+          Try writing in different elements in multiple browser tabs.
+        </p>
 
         <div class="controls">
           <label for="textarea-element">
-            HTMLTextareaElement
+            Textarea
             <textarea id="textarea-element"></textarea>
           </label>
 
           <label for="input-element">
-            HTMLInputElement type text
+            Input type text
             <input type="text" id="input-element" />
           </label>
 
           <label for="html-element">
-            HTMLElement with contenteditable
+            Div with contenteditable
             <div contenteditable id="html-element"></div>
           </label>
         </div>
@@ -255,7 +448,7 @@ import {
   ChangeStreamAdapter,
 } from '@sovereignbase/convergent-replicated-text'
 
-import { StationClient } from '@sovereignbase/station-client'
+import { StationClient } from '@sovereignbase/convergent-replicated-text'
 
 const station = new StationClient()
 const snapshot = JSON.parse(localStorage.getItem('state')) ?? undefined
