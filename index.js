@@ -594,7 +594,6 @@ function __merge(crListReplica, crListDelta) {
         valueEntry.predecessor
       );
       needsRelink = true;
-      void newVals.push(existingEntry);
       continue;
     }
     const linkedListEntry = transformSnapshotEntryToStateEntry(
@@ -1008,11 +1007,16 @@ var CRText = class {
         "BAD_PARAMS",
         "`index` must be typeof number and `characters` must be typeof string."
       );
+    let mode = "after";
+    if (index === -1) {
+      index = 0;
+      if (this.size > 0) mode = "before";
+    }
     const result = __update(
       index,
       transformStringToGraphemeArray(characters),
       this.state,
-      "after"
+      mode
     );
     if (!result) return;
     const { delta, change } = result;
@@ -1051,10 +1055,12 @@ var CRText = class {
   }
   merge(delta) {
     const change = __merge(this.state, delta);
-    if (change)
+    if (change) {
+      console.log(change);
       void this.eventTarget.dispatchEvent(
         new CustomEvent("change", { detail: change })
       );
+    }
   }
   acknowledge() {
     const ack = __acknowledge(this.state);
@@ -1177,11 +1183,21 @@ function getElementTextSelection(el) {
     selectionEnd
   };
 }
+function getInputCharacters(ev) {
+  const transferred = ev.dataTransfer?.getData("text/plain");
+  if (typeof transferred === "string" && transferred.length > 0)
+    return transferred;
+  if (typeof ev.data === "string") return ev.data;
+  if (ev.inputType === "insertParagraph" || ev.inputType === "insertLineBreak") {
+    return "\n";
+  }
+  return "";
+}
 function translateDOMEvent(ev) {
   const el = ev.target;
   if (!(el instanceof HTMLElement)) return false;
   const { selectionStart, selectionEnd } = getElementTextSelection(el);
-  const characters = ev.dataTransfer?.getData("text/plain") ?? ev.data ?? "";
+  const characters = getInputCharacters(ev);
   let removeIndex = selectionStart;
   let removeCount = selectionEnd - selectionStart;
   if (selectionStart === selectionEnd) {
@@ -1212,7 +1228,7 @@ function InputStreamAdapter(beforeInputEvent, crText) {
   if (insert) {
     let index = insert.index;
     if (index < 0) return;
-    if (index > 0) index--;
+    index--;
     void crText.insertAfter(index, insert.characters);
   }
   if (remove) {
@@ -1238,10 +1254,10 @@ function ChangeStreamAdapter(changeEvent, htmlElement) {
     }
     return;
   }
-  const textNode = htmlElement.firstChild instanceof Text ? htmlElement.firstChild : htmlElement.insertBefore(
-    htmlElement.ownerDocument.createTextNode(""),
-    htmlElement.firstChild
-  );
+  const doc = htmlElement.ownerDocument;
+  const oldAnchor = htmlElement.querySelector('[data-caret-anchor="true"]');
+  oldAnchor?.remove();
+  const textNode = htmlElement.firstChild instanceof Text ? htmlElement.firstChild : htmlElement.insertBefore(doc.createTextNode(""), htmlElement.firstChild);
   let caretOffset = textNode.length;
   for (const [key, value] of removals) {
     const index = Number(key);
@@ -1252,17 +1268,29 @@ function ChangeStreamAdapter(changeEvent, htmlElement) {
   }
   for (const [key, value] of inserts) {
     if (typeof value === "string") {
-      let index = Number(key);
+      const index = Number(key);
       textNode.insertData(index, value);
       caretOffset = index + value.length;
     }
   }
-  const selection = htmlElement.ownerDocument.defaultView?.getSelection();
+  if (htmlElement !== doc.activeElement && !htmlElement.contains(doc.activeElement)) {
+    return;
+  }
+  const selection = doc.defaultView?.getSelection();
   if (!selection) return;
-  const range = htmlElement.ownerDocument.createRange();
+  const range = doc.createRange();
   const clampedOffset = Math.max(0, Math.min(caretOffset, textNode.length));
-  range.setStart(textNode, clampedOffset);
-  range.collapse(true);
+  if (clampedOffset === textNode.length && textNode.data.length > 0 && textNode.data.endsWith("\n")) {
+    const anchor = doc.createElement("span");
+    anchor.dataset.caretAnchor = "true";
+    anchor.textContent = "\u200B";
+    htmlElement.append(anchor);
+    range.setStart(anchor.firstChild, 0);
+    range.collapse(true);
+  } else {
+    range.setStart(textNode, clampedOffset);
+    range.collapse(true);
+  }
   selection.removeAllRanges();
   selection.addRange(range);
 }
@@ -3071,5 +3099,6 @@ text.addEventListener("delta", (ev) => {
   station.relay(ev.detail);
 });
 station.addEventListener("message", (ev) => {
+  console.log(ev.detail);
   text.merge(ev.detail);
 });

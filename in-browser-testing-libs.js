@@ -54,5 +54,6 @@ text.addEventListener('delta', (ev) => {
 })
 
 station.addEventListener('message', (ev) => {
+  console.log(ev.detail)
   text.merge(ev.detail)
 })

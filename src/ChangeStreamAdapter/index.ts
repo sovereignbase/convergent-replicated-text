@@ -28,13 +28,15 @@ export function ChangeStreamAdapter(
 
     return
   }
+  const doc = htmlElement.ownerDocument
+
+  const oldAnchor = htmlElement.querySelector('[data-caret-anchor="true"]')
+  oldAnchor?.remove()
+
   const textNode =
     htmlElement.firstChild instanceof Text
       ? htmlElement.firstChild
-      : htmlElement.insertBefore(
-          htmlElement.ownerDocument.createTextNode(''),
-          htmlElement.firstChild
-        )
+      : htmlElement.insertBefore(doc.createTextNode(''), htmlElement.firstChild)
 
   let caretOffset = textNode.length
 
@@ -49,20 +51,41 @@ export function ChangeStreamAdapter(
 
   for (const [key, value] of inserts) {
     if (typeof value === 'string') {
-      let index = Number(key)
+      const index = Number(key)
       textNode.insertData(index, value)
       caretOffset = index + value.length
     }
   }
 
-  const selection = htmlElement.ownerDocument.defaultView?.getSelection()
+  if (
+    htmlElement !== doc.activeElement &&
+    !htmlElement.contains(doc.activeElement)
+  ) {
+    return
+  }
+
+  const selection = doc.defaultView?.getSelection()
   if (!selection) return
 
-  const range = htmlElement.ownerDocument.createRange()
+  const range = doc.createRange()
   const clampedOffset = Math.max(0, Math.min(caretOffset, textNode.length))
 
-  range.setStart(textNode, clampedOffset)
-  range.collapse(true)
+  if (
+    clampedOffset === textNode.length &&
+    textNode.data.length > 0 &&
+    textNode.data.endsWith('\n')
+  ) {
+    const anchor = doc.createElement('span')
+    anchor.dataset.caretAnchor = 'true'
+    anchor.textContent = '\u200B'
+    htmlElement.append(anchor)
+
+    range.setStart(anchor.firstChild!, 0)
+    range.collapse(true)
+  } else {
+    range.setStart(textNode, clampedOffset)
+    range.collapse(true)
+  }
 
   selection.removeAllRanges()
   selection.addRange(range)

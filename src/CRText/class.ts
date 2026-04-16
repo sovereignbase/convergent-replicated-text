@@ -3,14 +3,14 @@ import {
   __read,
   __update,
   __delete,
-  __snapshot,
+  __merge,
+  __acknowledge,
   __garbageCollect,
+  __snapshot,
   type CRListState,
   type CRListSnapshot,
   type CRListDelta,
   type CRListAck,
-  __acknowledge,
-  __merge,
 } from '@sovereignbase/convergent-replicated-list'
 import { CRTextError } from '../.errors/class.js'
 import { transformStringToGraphemeArray } from '../.helpers/index.js'
@@ -53,11 +53,17 @@ export class CRText {
         'BAD_PARAMS',
         '`index` must be typeof number and `characters` must be typeof string.'
       )
+    let mode: 'after' | 'before' = 'after'
+
+    if (index === -1) {
+      index = 0
+      if (this.size > 0) mode = 'before'
+    }
     const result = __update<string>(
       index,
       transformStringToGraphemeArray(characters),
       this.state,
-      'after'
+      mode
     )
     if (!result) return
     const { delta, change } = result
@@ -96,10 +102,12 @@ export class CRText {
   }
   merge(delta: CRListDelta<string>) {
     const change = __merge(this.state, delta)
-    if (change)
+    if (change) {
+      console.log(change)
       void this.eventTarget.dispatchEvent(
         new CustomEvent('change', { detail: change })
       )
+    }
   }
   acknowledge() {
     const ack = __acknowledge(this.state)

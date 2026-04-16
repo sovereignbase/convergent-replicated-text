@@ -39,13 +39,29 @@ function getElementTextSelection(el: HTMLElement): TextSelection {
   }
 }
 
+function getInputCharacters(ev: InputEvent): string {
+  const transferred = ev.dataTransfer?.getData('text/plain')
+  if (typeof transferred === 'string' && transferred.length > 0)
+    return transferred
+
+  if (typeof ev.data === 'string') return ev.data
+
+  if (
+    ev.inputType === 'insertParagraph' ||
+    ev.inputType === 'insertLineBreak'
+  ) {
+    return '\n'
+  }
+
+  return ''
+}
+
 function translateDOMEvent(ev: InputEvent): DOMTranslation | false {
   const el = ev.target
   if (!(el instanceof HTMLElement)) return false
 
   const { selectionStart, selectionEnd } = getElementTextSelection(el)
-
-  const characters = ev.dataTransfer?.getData('text/plain') ?? ev.data ?? ''
+  const characters = getInputCharacters(ev)
 
   let removeIndex = selectionStart
   let removeCount = selectionEnd - selectionStart
@@ -81,15 +97,19 @@ export function InputStreamAdapter(
   crText: CRText
 ): void {
   beforeInputEvent.preventDefault()
+
   const result = translateDOMEvent(beforeInputEvent)
   if (!result) return
+
   const { insert, remove } = result
+
   if (insert) {
     let index = insert.index
     if (index < 0) return
-    if (index > 0) index--
+    index--
     void crText.insertAfter(index, insert.characters)
   }
+
   if (remove) {
     void crText.removeAfter(remove.index, remove.removeCount)
   }
