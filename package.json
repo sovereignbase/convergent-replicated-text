@@ -42,7 +42,8 @@
     "build": "tsup && node in-browser-testing-build.js",
     "test": "npm run build && node test/run-coverage.mjs && node test/e2e/run.mjs",
     "bench": "npm run build && node benchmark/bench.js",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublishOnly": "npm run test && npm run bench"
   },
   "c8": {
     "all": true,
