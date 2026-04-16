@@ -32,3 +32,23 @@ export type CRTextEventListenerFor<K extends string> =
   K extends keyof CRTextEventMap
     ? CRTextEventListener<K>
     : EventListenerOrEventListenerObject
+
+export type TextSelection = {
+  selectionStart: number
+  selectionEnd: number
+}
+
+export type InsertOperation = {
+  index: number
+  characters: string
+}
+
+export type RemoveOperation = {
+  index: number
+  removeCount: number
+}
+
+export type DOMTranslation = {
+  insert: InsertOperation | false
+  remove: RemoveOperation | false
+}

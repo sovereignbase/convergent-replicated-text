@@ -42,15 +42,15 @@ export class CRText {
    * @param chars
    * @returns
    */
-  insertAfter(index: number, chars: string): void {
-    if (typeof index !== 'number' || typeof chars !== 'string')
+  insertAfter(index: number, characters: string): void {
+    if (typeof index !== 'number' || typeof characters !== 'string')
       throw new CRTextError(
         'BAD_PARAMS',
-        '`index` must be typeof number and `chars` must be typeof string.'
+        '`index` must be typeof number and `characters` must be typeof string.'
       )
     const result = __update<string>(
       index,
-      transformStringToGraphemeArray(chars),
+      transformStringToGraphemeArray(characters),
       this.state,
       'after'
     )
