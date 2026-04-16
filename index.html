@@ -6,9 +6,20 @@
     <title>Convergent Replicated Text (CR-Text) demo</title>
   </head>
   <body>
-    <textarea></textarea>
-    <input type="text" />
-    <div contenteditable="true"></div>
+    <label for="textarea-element">
+      HTMLTextareaElement
+      <textarea id="textarea-element"></textarea>
+    </label>
+
+    <label for="input-element">
+      HTMLInputElement
+      <input type="text" id="input-element" />
+    </label>
+
+    <label for="contenteditable-element">
+      HTMLElement
+      <div contenteditable="true" id="contenteditable-element"></div>
+    </label>
     <code>
       import { CRText, InputStreamAdapter, ChangeStreamAdapter, } from
       './dist/index.js' const text = new CRText() const elements =
