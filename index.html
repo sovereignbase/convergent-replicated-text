@@ -448,7 +448,7 @@ import {
   ChangeStreamAdapter,
 } from '@sovereignbase/convergent-replicated-text'
 
-import { StationClient } from '@sovereignbase/convergent-replicated-text'
+import { StationClient } from '@sovereignbase/station-client'
 
 const station = new StationClient()
 const snapshot = JSON.parse(localStorage.getItem('state')) ?? undefined
