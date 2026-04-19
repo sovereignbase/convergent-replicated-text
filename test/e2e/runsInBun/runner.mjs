@@ -3,7 +3,7 @@ import * as esmApi from '../../../dist/index.js'
 import {
   ensurePassing,
   printResults,
-  runBytecodecSuite,
+  runCRTextSuite,
 } from '../shared/suite.mjs'
 
 const require = createRequire(import.meta.url)
@@ -13,9 +13,7 @@ for (const [label, api] of [
   ['bun esm', esmApi],
   ['bun cjs', cjsApi],
 ]) {
-  const results = await runBytecodecSuite(api, { label })
+  const results = await runCRTextSuite(api, { label })
   printResults(results)
   ensurePassing(results)
 }
-
-/** update to current package */

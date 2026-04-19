@@ -1,35 +1,14 @@
-const TEST_TIMEOUT_MS = 5000
-const COMPRESS_TIMEOUT_MS = 1500
+const TEST_TIMEOUT_MS = 10_000
 
-export async function runBytecodecSuite(api, options = {}) {
-  const { label = 'runtime' } = options
-  const runtimeGlobals = options.runtimeGlobals ?? globalThis
-  const results = { label, ok: true, errors: [], tests: [] }
-  /** update to current package */
+export async function runCRTextSuite(api, options = {}) {
   const {
-    Bytes,
-    concat,
-    equals,
-    fromBase64String,
-    fromBase64UrlString,
-    fromCompressed,
-    fromBigInt,
-    fromHex,
-    fromJSON,
-    fromString,
-    fromZ85String,
-    toArrayBuffer,
-    toBase64String,
-    toBase64UrlString,
-    toBigInt,
-    toBufferSource,
-    toCompressed,
-    toHex,
-    toJSON,
-    toString,
-    toUint8Array,
-    toZ85String,
-  } = api
+    label = 'runtime',
+    stressRounds = 8,
+    scenarioCount = 40,
+    includeStress = false,
+    verbose = false,
+  } = options
+  const results = { label, ok: true, errors: [], tests: [] }
 
   function assert(condition, message) {
     if (!condition) throw new Error(message || 'assertion failed')
@@ -40,44 +19,13 @@ export async function runBytecodecSuite(api, options = {}) {
       throw new Error(message || `expected ${actual} to equal ${expected}`)
   }
 
-  function assertArrayEqual(actual, expected, message) {
-    const actualArray = Array.from(actual)
-    if (actualArray.length !== expected.length)
-      throw new Error(message || 'array length mismatch')
-    for (let index = 0; index < expected.length; index++) {
-      if (actualArray[index] !== expected[index])
-        throw new Error(message || 'array content mismatch')
-    }
-  }
-
   function assertJsonEqual(actual, expected, message) {
-    assertEqual(
-      JSON.stringify(actual),
-      JSON.stringify(expected),
-      message || 'json mismatch'
-    )
-  }
-
-  function assertThrows(fn, match) {
-    let threw = false
-    try {
-      fn()
-    } catch (error) {
-      threw = true
-      if (match && !match.test(String(error))) throw error
-    }
-    if (!threw) throw new Error('expected function to throw')
-  }
-
-  async function assertRejects(fn, match) {
-    let threw = false
-    try {
-      await fn()
-    } catch (error) {
-      threw = true
-      if (match && !match.test(String(error))) throw error
-    }
-    if (!threw) throw new Error('expected promise to reject')
+    const actualJson = JSON.stringify(actual)
+    const expectedJson = JSON.stringify(expected)
+    if (actualJson !== expectedJson)
+      throw new Error(
+        message || `expected ${actualJson} to equal ${expectedJson}`
+      )
   }
 
   async function withTimeout(promise, ms, name) {
@@ -92,6 +40,7 @@ export async function runBytecodecSuite(api, options = {}) {
 
   async function runTest(name, fn) {
     try {
+      if (verbose) console.log(`${label}: ${name}`)
       await withTimeout(Promise.resolve().then(fn), TEST_TIMEOUT_MS, name)
       results.tests.push({ name, ok: true })
     } catch (error) {
@@ -101,289 +50,515 @@ export async function runBytecodecSuite(api, options = {}) {
     }
   }
 
-  function isNodeLikeRuntime() {
-    return (
-      typeof runtimeGlobals.process !== 'undefined' &&
-      !!runtimeGlobals.process?.versions?.node
+  async function withSilencedConsole(fn) {
+    const originalLog = console.log
+    console.log = () => {}
+    try {
+      return await fn()
+    } finally {
+      console.log = originalLog
+    }
+  }
+
+  function createReplica(snapshot) {
+    return new api.CRText(snapshot)
+  }
+
+  function textOf(replica) {
+    return replica.valueOf()
+  }
+
+  function snapshotOf(replica) {
+    return JSON.parse(JSON.stringify(replica.toJSON()))
+  }
+
+  function graphemes(text) {
+    return Array.from(
+      new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text),
+      (entry) => entry.segment
     )
   }
 
-  const base64Payload = Uint8Array.from([104, 101, 108, 108, 111])
-  const utf8Text = 'h\u00e9llo \u2713 rocket \ud83d\ude80'
-  const jsonValue = { ok: true, count: 3, list: ['x', { y: 1 }], nil: null }
-  const compressionPayload = fromString('compress me please')
+  function random(seed) {
+    let state = seed >>> 0
+    return () => {
+      state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0
+      return state / 0x1_0000_0000
+    }
+  }
+
+  function shuffled(values, seed) {
+    const next = values.slice()
+    const rand = random(seed)
+    for (let index = next.length - 1; index > 0; index--) {
+      const other = Math.floor(rand() * (index + 1))
+      ;[next[index], next[other]] = [next[other], next[index]]
+    }
+    return next
+  }
+
+  function shuffledIndices(length, seed) {
+    return shuffled(
+      Array.from({ length }, (_, index) => index),
+      seed
+    )
+  }
+
+  function captureEvents(replica) {
+    const events = {
+      delta: [],
+      change: [],
+      snapshot: [],
+      ack: [],
+    }
+    const listeners = {
+      delta(event) {
+        events.delta.push(event.detail)
+      },
+      change(event) {
+        events.change.push(event.detail)
+      },
+      snapshot(event) {
+        events.snapshot.push(event.detail)
+      },
+      ack(event) {
+        events.ack.push(event.detail)
+      },
+    }
+    for (const type of Object.keys(listeners))
+      replica.addEventListener(type, listeners[type])
+    return {
+      events,
+      dispose() {
+        for (const type of Object.keys(listeners))
+          replica.removeEventListener(type, listeners[type])
+      },
+    }
+  }
+
+  function emitSnapshot(replica) {
+    const probe = captureEvents(replica)
+    replica.snapshot()
+    const snapshot = probe.events.snapshot.at(-1)
+    probe.dispose()
+    return snapshot
+  }
+
+  function emitAck(replica) {
+    const probe = captureEvents(replica)
+    replica.acknowledge()
+    const ack = probe.events.ack.at(-1)
+    probe.dispose()
+    return ack
+  }
+
+  function assertReplicasConverged(replicas, message) {
+    const expectedText = textOf(replicas[0])
+    for (let index = 1; index < replicas.length; index++) {
+      assertEqual(
+        textOf(replicas[index]),
+        expectedText,
+        message || `replica ${index} text diverged`
+      )
+    }
+    for (let index = 0; index < replicas.length; index++) {
+      const hydrated = createReplica(replicas[index].toJSON())
+      assertEqual(
+        textOf(hydrated),
+        textOf(replicas[index]),
+        message || `replica ${index} hydrate diverged`
+      )
+    }
+  }
+
+  function mergeDeltas(replica, deltas, seed, options = {}) {
+    const { restart = false } = options
+    let current = replica
+    const order = shuffledIndices(deltas.length, seed)
+    for (let index = 0; index < order.length; index++) {
+      const deltaIndex = order[index]
+      current.merge(deltas[deltaIndex])
+      if (deltaIndex % 3 === 0) current.merge(deltas[deltaIndex])
+      if (restart && index % 7 === 0) current = createReplica(current.toJSON())
+    }
+    return current
+  }
+
+  function mergeSnapshots(replica, snapshots, seed, options = {}) {
+    const { restart = false } = options
+    let current = replica
+    const order = shuffledIndices(snapshots.length, seed)
+    for (let index = 0; index < order.length; index++) {
+      const snapshotIndex = order[index]
+      current.merge(snapshots[snapshotIndex])
+      if (snapshotIndex % 2 === 0) current.merge(snapshots[snapshotIndex])
+      if (restart && index % 5 === 0) current = createReplica(current.toJSON())
+    }
+    return current
+  }
+
+  function nextChunk(serial, rand) {
+    const corpus = ['a', 'b', 'c', 'd', '\n', 'å', 'ä', '🙂', '🚀', 'e\u0301']
+    const width = 1 + Math.floor(rand() * 3)
+    let text = ''
+    for (let index = 0; index < width; index++) {
+      const value =
+        corpus[(serial + index + Math.floor(rand() * 7)) % corpus.length]
+      text += value
+    }
+    return text
+  }
+
+  function applyLocalEdit(replica, probe, rand, serial) {
+    const deltaCount = probe.events.delta.length
+    const changeCount = probe.events.change.length
+    const roll = rand()
+
+    if (replica.size === 0 || roll < 0.6) {
+      const anchor =
+        replica.size === 0 ? -1 : Math.floor(rand() * (replica.size + 1)) - 1
+      replica.insertAfter(anchor, nextChunk(serial, rand))
+    } else {
+      const index = Math.floor(rand() * replica.size)
+      const removeCount =
+        1 + Math.floor(rand() * Math.min(3, replica.size - index))
+      replica.removeAfter(index, removeCount)
+    }
+
+    assertEqual(
+      probe.events.delta.length,
+      deltaCount + 1,
+      'local edit did not emit exactly one delta'
+    )
+    assertEqual(
+      probe.events.change.length,
+      changeCount + 1,
+      'local edit did not emit exactly one change'
+    )
+
+    return probe.events.delta.at(-1)
+  }
+
+  function collectStressDeltas(replicas, rounds, seed) {
+    const rand = random(seed)
+    const probes = replicas.map((replica) => captureEvents(replica))
+    const deltas = []
+    let serial = 0
+
+    try {
+      for (let round = 0; round < rounds; round++) {
+        for (let index = 0; index < replicas.length; index++) {
+          deltas.push(
+            applyLocalEdit(replicas[index], probes[index], rand, serial)
+          )
+          serial++
+        }
+      }
+    } finally {
+      for (const probe of probes) probe.dispose()
+    }
+
+    return deltas
+  }
 
   await runTest('exports shape', () => {
-    assert(typeof Bytes === 'function', 'Bytes export missing')
-    for (const fn of [
-      fromBase64String,
-      toBase64String,
-      fromBase64UrlString,
-      toBase64UrlString,
-      fromHex,
-      toHex,
-      fromZ85String,
-      toZ85String,
-      fromString,
-      toString,
-      fromBigInt,
-      toBigInt,
-      fromJSON,
-      toJSON,
-      toCompressed,
-      fromCompressed,
-      toBufferSource,
-      toArrayBuffer,
-      toUint8Array,
-      concat,
-      equals,
-    ]) {
-      assert(typeof fn === 'function', 'expected function export')
+    assert(typeof api.CRText === 'function', 'CRText export missing')
+    assert(
+      typeof api.ChangeStreamAdapter === 'function',
+      'ChangeStreamAdapter export missing'
+    )
+    assert(
+      typeof api.BeforeInputStreamAdapter === 'function',
+      'BeforeInputStreamAdapter export missing'
+    )
+    assert(
+      typeof api.translateDOMBeforeInputEvent === 'function',
+      'translateDOMBeforeInputEvent export missing'
+    )
+    assert(typeof api.CRTextError === 'function', 'CRTextError export missing')
+  })
+
+  await runTest(
+    'constructor hydrate and string coercions preserve the visible text',
+    () => {
+      const replica = createReplica()
+      replica.insertAfter(-1, 'he')
+      replica.insertAfter(1, 'llo')
+      replica.insertAfter(replica.size - 1, '🙂')
+
+      assertEqual(textOf(replica), 'hello🙂')
+      assertEqual(`${replica}`, 'hello🙂')
+      assertEqual(replica[Symbol.toPrimitive](), 'hello🙂')
+      assertEqual([...replica].join(''), 'hello🙂')
+
+      const hydrated = createReplica(replica.toJSON())
+      assertEqual(textOf(hydrated), 'hello🙂')
+      assertEqual(hydrated.size, replica.size)
     }
+  )
+
+  await runTest('insert and remove operate on grapheme clusters', () => {
+    const replica = createReplica()
+    const text = 'A👨‍👩‍👧‍👦e\u0301Z'
+    replica.insertAfter(-1, text)
+
+    assertEqual(textOf(replica), text)
+    assertEqual(replica.size, graphemes(text).length)
+
+    replica.removeAfter(1, 1)
+    assertEqual(textOf(replica), 'Ae\u0301Z')
+    assertEqual(replica.size, graphemes('Ae\u0301Z').length)
   })
 
-  await runTest('toBase64String', () => {
-    const encoded = toBase64String(base64Payload)
-    assertEqual(encoded, 'aGVsbG8=')
+  await runTest(
+    'local operations emit delta and change while remote merges emit change only',
+    () =>
+      withSilencedConsole(() => {
+        const local = createReplica()
+        const localProbe = captureEvents(local)
 
-    const view = new DataView(base64Payload.buffer, 1, 3)
-    assertEqual(toBase64String(view), 'ZWxs')
-  })
+        try {
+          local.insertAfter(-1, 'ab')
+          assertEqual(localProbe.events.delta.length, 1)
+          assertEqual(localProbe.events.change.length, 1)
 
-  await runTest('fromBase64String', () => {
-    const decoded = fromBase64String('aGVsbG8=')
-    assertArrayEqual(decoded, base64Payload)
-  })
+          const remote = createReplica(local.toJSON())
+          const remoteProbe = captureEvents(remote)
+          remote.insertAfter(-1, 'X')
+          const remoteDelta = remoteProbe.events.delta.at(-1)
+          local.merge(remoteDelta)
 
-  await runTest('toBase64UrlString', () => {
-    const encoded = toBase64UrlString(base64Payload)
-    assertEqual(encoded, 'aGVsbG8')
-  })
+          assertEqual(localProbe.events.delta.length, 1)
+          assertEqual(localProbe.events.change.length, 2)
+          assertEqual(textOf(local), textOf(remote))
+          remoteProbe.dispose()
+        } finally {
+          localProbe.dispose()
+        }
+      })
+  )
 
-  await runTest('fromBase64UrlString', () => {
-    const decoded = fromBase64UrlString('aGVsbG8')
-    assertArrayEqual(decoded, base64Payload)
-    assertThrows(() => fromBase64UrlString('a'), /Invalid base64url length/)
-  })
+  await runTest(
+    'snapshot acknowledge and removeEventListener work with function and object listeners',
+    () => {
+      const replica = createReplica()
+      const counts = { delta: 0, snapshot: 0 }
+      const deltaListener = () => {
+        counts.delta++
+      }
+      const snapshotListener = {
+        handleEvent() {
+          counts.snapshot++
+        },
+      }
 
-  await runTest('toHex', () => {
-    assertEqual(toHex(base64Payload), '68656c6c6f')
+      replica.addEventListener('delta', deltaListener)
+      replica.addEventListener('snapshot', snapshotListener)
 
-    const view = new DataView(base64Payload.buffer, 1, 3)
-    assertEqual(toHex(view), '656c6c')
-  })
+      replica.insertAfter(-1, 'abc')
+      const snapshot = emitSnapshot(replica)
+      void emitAck(replica)
 
-  await runTest('fromHex', () => {
-    const decoded = fromHex('68656C6C6F')
-    assertArrayEqual(decoded, base64Payload)
-    assertThrows(() => fromHex('6g'), /Invalid hex character at index 1/)
-  })
+      replica.removeEventListener('delta', deltaListener)
+      replica.removeEventListener('snapshot', snapshotListener)
+      replica.insertAfter(replica.size - 1, 'd')
+      replica.snapshot()
+      replica.acknowledge()
 
-  await runTest('toZ85String', () => {
-    const payload = Uint8Array.from([
-      0x86, 0x4f, 0xd2, 0x6f, 0xb5, 0x59, 0xf7, 0x5b,
-    ])
-    assertEqual(toZ85String(payload), 'HelloWorld')
-    assertThrows(
-      () => toZ85String(base64Payload),
-      /Z85 input length must be divisible by 4/
-    )
-  })
+      assertEqual(counts.delta, 1)
+      assertEqual(counts.snapshot, 1)
 
-  await runTest('fromZ85String', () => {
-    const decoded = fromZ85String('HelloWorld')
-    assertArrayEqual(decoded, [0x86, 0x4f, 0xd2, 0x6f, 0xb5, 0x59, 0xf7, 0x5b])
-    assertThrows(
-      () => fromZ85String('Hell~'),
-      /Invalid Z85 character at index 4/
-    )
-  })
+      snapshot.values.length = 0
+      snapshot.tombstones.length = 0
 
-  await runTest('fromString', () => {
-    const bytes = fromString(utf8Text)
-    assertEqual(toString(bytes), utf8Text)
-  })
-
-  await runTest('toString', () => {
-    const ascii = fromString('abcd')
-    const text = toString(ascii)
-    assertEqual(text, 'abcd')
-
-    const bytes = fromString(utf8Text)
-    assertEqual(toString(bytes), utf8Text)
-
-    const view = new DataView(ascii.buffer, 1, 2)
-    assertEqual(toString(view), 'bc')
-  })
-
-  await runTest('bigint helpers', () => {
-    const value = 0x1234567890abcdefn
-    const encoded = fromBigInt(value)
-    assertArrayEqual(encoded, [0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef])
-    assertEqual(toBigInt(encoded), value)
-    assertEqual(toBigInt([]), 0n)
-    assertThrows(() => fromBigInt(-1n), /expects an unsigned bigint/)
-  })
-
-  await runTest('fromJSON', () => {
-    const bytes = fromJSON(jsonValue)
-    assertJsonEqual(toJSON(bytes), jsonValue)
-  })
-
-  await runTest('toJSON', () => {
-    assertJsonEqual(
-      toJSON('{"ok":true,"count":3,"list":["x",{"y":1}],"nil":null}'),
-      jsonValue
-    )
-  })
-
-  await runTest('toUint8Array', () => {
-    const source = new Uint8Array([10, 20, 30, 40])
-    const view = new DataView(source.buffer, 1, 2)
-    const normalized = toUint8Array(view)
-    source[1] = 99
-    source[2] = 88
-
-    assertArrayEqual(normalized, [20, 30])
-  })
-
-  await runTest('toArrayBuffer', () => {
-    const source = new Uint8Array([10, 20, 30, 40])
-    const view = new DataView(source.buffer, 1, 2)
-    const copiedBuffer = toArrayBuffer(view)
-    source[1] = 99
-    source[2] = 88
-    assertArrayEqual(new Uint8Array(copiedBuffer), [20, 30])
-  })
-
-  await runTest('toBufferSource', () => {
-    const source = new Uint8Array([10, 20, 30, 40])
-    const view = new DataView(source.buffer, 1, 2)
-    const bufferSource = toBufferSource(view)
-    source[1] = 99
-    source[2] = 88
-    assert(ArrayBuffer.isView(bufferSource), 'expected ArrayBufferView')
-    assertArrayEqual(bufferSource, [20, 30])
-  })
-
-  await runTest('SharedArrayBuffer support', () => {
-    const SharedArrayBufferCtor = runtimeGlobals.SharedArrayBuffer
-    if (typeof SharedArrayBufferCtor === 'undefined') return
-    const shared = new SharedArrayBufferCtor(4)
-    const view = new Uint8Array(shared)
-    view.set([5, 6, 7, 8])
-    const normalized = toUint8Array(shared)
-    const copiedBuffer = toArrayBuffer(shared)
-    const copiedSource = toBufferSource(shared)
-    view[1] = 99
-    assertArrayEqual(normalized, [5, 6, 7, 8])
-    assertArrayEqual(new Uint8Array(copiedBuffer), [5, 6, 7, 8])
-    assertArrayEqual(copiedSource, [5, 6, 7, 8])
-  })
-
-  await runTest('concat', () => {
-    const left = Uint8Array.from([1, 2, 3])
-    const right = [4, 5]
-    const buffer = new Uint8Array([6, 7]).buffer
-    const view = new DataView(new Uint8Array([8, 9, 10, 11]).buffer, 1, 2)
-
-    const merged = concat([left, right, buffer, view])
-    assertArrayEqual(merged, [1, 2, 3, 4, 5, 6, 7, 9, 10])
-  })
-
-  await runTest('equals', () => {
-    const merged = Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 9, 10])
-    assertEqual(equals(merged, merged.slice()), true)
-    assertEqual(equals(merged, [1, 2, 3]), false)
-  })
-
-  await runTest('toCompressed', async () => {
-    const nodeLike = isNodeLikeRuntime()
-
-    if (!nodeLike && typeof runtimeGlobals.CompressionStream === 'undefined') {
-      await assertRejects(
-        () => toCompressed(compressionPayload),
-        /gzip compression not available/
-      )
-      return
+      assertEqual(textOf(replica), 'abcd')
+      assert(snapshotOf(replica).values.length > 0, 'snapshot mutation leaked')
     }
+  )
 
-    const compressed = await withTimeout(
-      toCompressed(compressionPayload),
-      COMPRESS_TIMEOUT_MS,
-      'toCompressed'
+  await runTest('duplicate delta merges are idempotent', () =>
+    withSilencedConsole(() => {
+      const source = createReplica()
+      const sourceProbe = captureEvents(source)
+      const target = createReplica()
+      const targetProbe = captureEvents(target)
+
+      try {
+        source.insertAfter(-1, 'abc')
+        const insertDelta = sourceProbe.events.delta.at(-1)
+
+        target.merge(insertDelta)
+        target.merge(insertDelta)
+
+        assertEqual(textOf(target), 'abc')
+        assertEqual(targetProbe.events.change.length, 1)
+
+        source.removeAfter(1, 1)
+        const removeDelta = sourceProbe.events.delta.at(-1)
+
+        target.merge(removeDelta)
+        target.merge(removeDelta)
+
+        assertEqual(textOf(target), 'ac')
+        assertEqual(targetProbe.events.change.length, 2)
+      } finally {
+        sourceProbe.dispose()
+        targetProbe.dispose()
+      }
+    })
+  )
+
+  await runTest(
+    'full-frontier garbage collection preserves converged value and snapshot hydration',
+    () =>
+      withSilencedConsole(() => {
+        const seed = createReplica()
+        seed.insertAfter(-1, 'abcdef')
+        const baseSnapshot = seed.toJSON()
+        const replicas = Array.from({ length: 3 }, () =>
+          createReplica(baseSnapshot)
+        )
+        const sourceProbe = captureEvents(replicas[0])
+
+        try {
+          replicas[0].removeAfter(1, 3)
+          replicas[0].insertAfter(0, 'XYZ')
+          replicas[0].insertAfter(replicas[0].size - 1, '🙂')
+
+          for (const delta of sourceProbe.events.delta) {
+            replicas[1].merge(delta)
+            replicas[2].merge(delta)
+          }
+
+          assertReplicasConverged(replicas)
+
+          const frontiers = replicas
+            .map((replica) => emitAck(replica))
+            .filter((frontier) => typeof frontier === 'string')
+
+          for (const replica of replicas) replica.garbageCollect(frontiers)
+
+          assertReplicasConverged(replicas, 'gc changed converged state')
+          for (const replica of replicas) {
+            const hydrated = createReplica(replica.toJSON())
+            assertEqual(textOf(hydrated), textOf(replica))
+          }
+        } finally {
+          sourceProbe.dispose()
+        }
+      })
+  )
+
+  if (includeStress) {
+    await runTest('replicas converge after shuffled delta delivery', () =>
+      withSilencedConsole(() => {
+        const seed = createReplica()
+        seed.insertAfter(-1, 'seed🙂')
+        const baseSnapshot = seed.toJSON()
+        const sources = Array.from({ length: 5 }, () =>
+          createReplica(baseSnapshot)
+        )
+        const deltas = collectStressDeltas(sources, stressRounds, 0xc0ffee)
+        const snapshots = sources.map((replica) => replica.toJSON())
+        const targets = Array.from({ length: 5 }, () =>
+          createReplica(baseSnapshot)
+        )
+
+        for (let index = 0; index < targets.length; index++) {
+          targets[index] = mergeDeltas(targets[index], deltas, 10_000 + index)
+          targets[index] = mergeSnapshots(
+            targets[index],
+            snapshots,
+            15_000 + index
+          )
+        }
+
+        assertReplicasConverged(targets)
+      })
     )
-    assert(compressed instanceof Uint8Array, 'expected Uint8Array result')
-    assert(compressed.length > 0, 'expected compressed bytes')
-  })
 
-  await runTest('fromCompressed', async () => {
-    const nodeLike = isNodeLikeRuntime()
+    await runTest(
+      'replicas converge across shuffled delivery with restarts',
+      () =>
+        withSilencedConsole(() => {
+          const seed = createReplica()
+          seed.insertAfter(-1, 'seed🙂')
+          const baseSnapshot = seed.toJSON()
+          const sources = Array.from({ length: 5 }, () =>
+            createReplica(baseSnapshot)
+          )
+          const deltas = collectStressDeltas(sources, stressRounds, 0x51ced)
+          const snapshots = sources.map((replica) => replica.toJSON())
+          const targets = Array.from({ length: 5 }, () =>
+            createReplica(baseSnapshot)
+          )
 
-    if (!nodeLike && typeof runtimeGlobals.CompressionStream === 'undefined') {
-      await assertRejects(
-        () => toCompressed(compressionPayload),
-        /gzip compression not available/
-      )
-      return
-    }
+          for (let index = 0; index < targets.length; index++) {
+            targets[index] = mergeDeltas(
+              targets[index],
+              deltas,
+              20_000 + index,
+              {
+                restart: true,
+              }
+            )
+            targets[index] = mergeSnapshots(
+              targets[index],
+              snapshots,
+              25_000 + index,
+              {
+                restart: true,
+              }
+            )
+          }
 
-    const compressed = await withTimeout(
-      toCompressed(compressionPayload),
-      COMPRESS_TIMEOUT_MS,
-      'toCompressed for fromCompressed'
+          assertReplicasConverged(targets)
+        })
     )
 
-    if (
-      !nodeLike &&
-      typeof runtimeGlobals.DecompressionStream === 'undefined'
-    ) {
-      await assertRejects(
-        () => fromCompressed(compressed),
-        /gzip decompression not available/
-      )
-      return
-    }
+    await runTest(
+      'deterministic randomized scenarios converge on valueOf output',
+      () =>
+        withSilencedConsole(() => {
+          for (let scenario = 0; scenario < scenarioCount; scenario++) {
+            const seed = createReplica()
+            seed.insertAfter(-1, nextChunk(scenario, random(30_000 + scenario)))
+            const baseSnapshot = seed.toJSON()
+            const replicaCount = 3 + (scenario % 3)
+            const rounds = 2 + (scenario % 5)
+            const sources = Array.from({ length: replicaCount }, () =>
+              createReplica(baseSnapshot)
+            )
+            const deltas = collectStressDeltas(
+              sources,
+              rounds,
+              40_000 + scenario * 17
+            )
+            const snapshots = sources.map((replica) => replica.toJSON())
+            const targets = Array.from({ length: replicaCount }, () =>
+              createReplica(baseSnapshot)
+            )
 
-    const restored = await withTimeout(
-      fromCompressed(compressed),
-      COMPRESS_TIMEOUT_MS,
-      'fromCompressed'
+            for (let index = 0; index < targets.length; index++) {
+              targets[index] = mergeDeltas(
+                targets[index],
+                deltas,
+                50_000 + scenario * 13 + index,
+                { restart: scenario % 2 === 1 }
+              )
+              targets[index] = mergeSnapshots(
+                targets[index],
+                snapshots,
+                55_000 + scenario * 13 + index,
+                { restart: scenario % 2 === 1 }
+              )
+            }
+
+            assertReplicasConverged(targets, `scenario ${scenario} diverged`)
+          }
+        })
     )
-    assertArrayEqual(restored, compressionPayload)
-  })
-
-  await runTest('Bytes wrapper', async () => {
-    const payload = Uint8Array.from([1, 2, 3, 4])
-
-    const base64 = Bytes.toBase64String(payload)
-    assertEqual(base64, 'AQIDBA==')
-    assertArrayEqual(Bytes.fromBase64String(base64), [1, 2, 3, 4])
-
-    const encoded = Bytes.toBase64UrlString(payload)
-    assertArrayEqual(Bytes.fromBase64UrlString(encoded), [1, 2, 3, 4])
-
-    const hex = Bytes.toHex(payload)
-    assertEqual(hex, '01020304')
-    assertArrayEqual(Bytes.fromHex(hex), [1, 2, 3, 4])
-
-    const z85 = Bytes.toZ85String(payload)
-    assertArrayEqual(Bytes.fromZ85String(z85), [1, 2, 3, 4])
-
-    const text = 'bytes wrapper'
-    assertEqual(Bytes.toString(Bytes.fromString(text)), text)
-
-    const bigint = 0x01020304n
-    assertArrayEqual(Bytes.fromBigInt(bigint), [1, 2, 3, 4])
-    assertEqual(Bytes.toBigInt(payload), bigint)
-
-    const value = { wrapper: true, items: [1, 2, 3] }
-    assertJsonEqual(Bytes.toJSON(Bytes.fromJSON(value)), value)
-
-    const joined = Bytes.concat([payload, [5, 6]])
-    assertArrayEqual(joined, [1, 2, 3, 4, 5, 6])
-    assertEqual(Bytes.equals(payload, [1, 2, 3, 4]), true)
-  })
+  }
 
   return results
 }

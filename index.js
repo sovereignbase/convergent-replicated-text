@@ -961,6 +961,12 @@ var CRList = class {
 // dist/index.js
 var CRTextError = class extends Error {
   code;
+  /**
+   * Creates a new `CRTextError`.
+   *
+   * @param code The semantic error code.
+   * @param message An optional human-readable detail message.
+   */
   constructor(code, message) {
     const detail = message ?? code;
     super(`{@sovereignbase/convergent-replicated-text} ${detail}`);
@@ -973,6 +979,11 @@ function transformStringToGraphemeArray(value) {
   return Array.from(segmenter.segment(value), (x) => x.segment);
 }
 var CRText = class {
+  /**
+   * Creates a new `CRText` instance.
+   *
+   * @param snapshot An optional detached snapshot used to hydrate the initial state.
+   */
   constructor(snapshot2) {
     Object.defineProperties(this, {
       state: {
@@ -990,16 +1001,19 @@ var CRText = class {
     });
   }
   /**
-   * The current number of characters.
+   * Returns the current number of grapheme clusters in the text projection.
    */
   get size() {
     return this.state.size;
   }
   /**
+   * Inserts characters immediately after the specified index.
    *
-   * @param index
-   * @param chars
-   * @returns
+   * Pass `-1` to insert at the beginning of the document.
+   *
+   * @param index The anchor index after which the characters are inserted.
+   * @param characters The text to insert.
+   * @throws {CRTextError} Thrown when the arguments are not a number and string pair.
    */
   insertAfter(index, characters) {
     if (typeof index !== "number" || typeof characters !== "string")
@@ -1030,10 +1044,11 @@ var CRText = class {
       );
   }
   /**
+   * Removes characters starting at the specified index.
    *
-   * @param index  Inclusive
-   * @param removeCount
-   * @returns
+   * @param index The inclusive start index to remove from.
+   * @param removeCount The number of characters to remove.
+   * @throws {CRTextError} Thrown when the arguments are not numeric.
    */
   removeAfter(index, removeCount) {
     if (typeof index !== "number" || typeof removeCount !== "number")
@@ -1053,15 +1068,26 @@ var CRText = class {
         new CustomEvent("change", { detail: change })
       );
   }
+  /**
+   * Merges a remote delta into this replica.
+   *
+   * Dispatches a `change` event when the merge updates the current projection.
+   *
+   * @param delta The remote delta to merge.
+   */
   merge(delta) {
     const change = __merge(this.state, delta);
     if (change) {
-      console.log(change);
       void this.eventTarget.dispatchEvent(
         new CustomEvent("change", { detail: change })
       );
     }
   }
+  /**
+   * Emits an acknowledgement frontier for the current replica state.
+   *
+   * Dispatches an `ack` event when an acknowledgement is produced.
+   */
   acknowledge() {
     const ack = __acknowledge(this.state);
     if (ack) {
@@ -1070,9 +1096,17 @@ var CRText = class {
       );
     }
   }
+  /**
+   * Removes tombstoned history acknowledged by every provided frontier.
+   *
+   * @param frontiers The acknowledgement frontiers that permit garbage collection.
+   */
   garbageCollect(frontiers2) {
     void __garbageCollect(frontiers2, this.state);
   }
+  /**
+   * Dispatches a detached snapshot of the current state.
+   */
   snapshot() {
     const snapshot2 = __snapshot(this.state);
     if (snapshot2) {
@@ -1105,9 +1139,15 @@ var CRText = class {
       yield value;
     }
   }
+  /**
+   * Returns the current text projection as a string.
+   */
   valueOf() {
     return [...this].join("");
   }
+  /**
+   * Returns the current text projection when coerced to a primitive.
+   */
   [Symbol.toPrimitive]() {
     return [...this].join("");
   }
@@ -1126,9 +1166,9 @@ var CRText = class {
   /**
    * Registers an event listener.
    *
-   * @param type - The event type to listen for.
-   * @param listener - The listener to register.
-   * @param options - Listener registration options.
+   * @param type The event type to listen for.
+   * @param listener The listener to register.
+   * @param options Listener registration options.
    */
   addEventListener(type, listener, options) {
     this.eventTarget.addEventListener(
@@ -1140,9 +1180,9 @@ var CRText = class {
   /**
    * Removes an event listener.
    *
-   * @param type - The event type to stop listening for.
-   * @param listener - The listener to remove.
-   * @param options - Listener removal options.
+   * @param type The event type to stop listening for.
+   * @param listener The listener to remove.
+   * @param options Listener removal options.
    */
   removeEventListener(type, listener, options) {
     this.eventTarget.removeEventListener(
@@ -1174,8 +1214,8 @@ function getElementTextSelection(el) {
     };
   }
   const beforeRange = range.cloneRange();
-  beforeRange.selectNodeContents(el);
-  beforeRange.setEnd(range.startContainer, range.startOffset);
+  void beforeRange.selectNodeContents(el);
+  void beforeRange.setEnd(range.startContainer, range.startOffset);
   const selectionStart = beforeRange.toString().length;
   const selectionEnd = selectionStart + range.toString().length;
   return {
@@ -1221,7 +1261,7 @@ function translateDOMBeforeInputEvent(ev) {
   };
 }
 function BeforeInputStreamAdapter(beforeInputEvent, crText) {
-  beforeInputEvent.preventDefault();
+  void beforeInputEvent.preventDefault();
   const result = translateDOMBeforeInputEvent(beforeInputEvent);
   if (!result) return;
   const { insert, remove } = result;
@@ -1262,14 +1302,14 @@ function ChangeStreamAdapter(changeEvent, htmlElement) {
   for (const [key, value] of removals) {
     const index = Number(key);
     if (value === void 0) {
-      textNode.deleteData(index, 1);
+      void textNode.deleteData(index, 1);
       caretOffset = index;
     }
   }
   for (const [key, value] of inserts) {
     if (typeof value === "string") {
       const index = Number(key);
-      textNode.insertData(index, value);
+      void textNode.insertData(index, value);
       caretOffset = index + value.length;
     }
   }
@@ -1284,15 +1324,15 @@ function ChangeStreamAdapter(changeEvent, htmlElement) {
     const anchor = doc.createElement("span");
     anchor.dataset.caretAnchor = "true";
     anchor.textContent = "\u200B";
-    htmlElement.append(anchor);
-    range.setStart(anchor.firstChild, 0);
-    range.collapse(true);
+    void htmlElement.append(anchor);
+    void range.setStart(anchor.firstChild, 0);
+    void range.collapse(true);
   } else {
-    range.setStart(textNode, clampedOffset);
-    range.collapse(true);
+    void range.setStart(textNode, clampedOffset);
+    void range.collapse(true);
   }
-  selection.removeAllRanges();
-  selection.addRange(range);
+  void selection.removeAllRanges();
+  void selection.addRange(range);
 }
 
 // node_modules/@msgpack/msgpack/dist.esm/utils/utf8.mjs
@@ -3099,6 +3139,5 @@ text.addEventListener("delta", (ev) => {
   station.relay(ev.detail);
 });
 station.addEventListener("message", (ev) => {
-  console.log(ev.detail);
   text.merge(ev.detail);
 });

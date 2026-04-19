@@ -10,4 +10,13 @@ await Promise.all([
     format: 'esm',
     treeShaking: true,
   }),
+  build({
+    entryPoints: ['./dist/index.js'],
+    outfile: './test/e2e/runsInBrowsers/browser-dist.js',
+    bundle: true,
+    external: ['node:*'],
+    platform: 'browser',
+    format: 'esm',
+    treeShaking: true,
+  }),
 ])

@@ -126,7 +126,6 @@ export class CRText {
   merge(delta: CRListDelta<string>): void {
     const change = __merge(this.state, delta)
     if (change) {
-      console.log(change)
       void this.eventTarget.dispatchEvent(
         new CustomEvent('change', { detail: change })
       )
