@@ -1,6 +1,12 @@
 import type { TextSelection, DOMTranslation } from '../.types/index.js'
 import { CRText } from '../CRText/class.js'
 
+/**
+ * Returns the current linear selection for a text-capable element.
+ *
+ * @param el The editable element to inspect.
+ * @returns The current selection range as UTF-16 code unit offsets.
+ */
 function getElementTextSelection(el: HTMLElement): TextSelection {
   if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
     return {
@@ -27,8 +33,8 @@ function getElementTextSelection(el: HTMLElement): TextSelection {
   }
 
   const beforeRange = range.cloneRange()
-  beforeRange.selectNodeContents(el)
-  beforeRange.setEnd(range.startContainer, range.startOffset)
+  void beforeRange.selectNodeContents(el)
+  void beforeRange.setEnd(range.startContainer, range.startOffset)
 
   const selectionStart = beforeRange.toString().length
   const selectionEnd = selectionStart + range.toString().length
@@ -39,6 +45,12 @@ function getElementTextSelection(el: HTMLElement): TextSelection {
   }
 }
 
+/**
+ * Extracts the inserted character data represented by an `InputEvent`.
+ *
+ * @param ev The input event to inspect.
+ * @returns The inserted text, or an empty string when the event is deletion-only.
+ */
 function getInputCharacters(ev: InputEvent): string {
   const transferred = ev.dataTransfer?.getData('text/plain')
   if (typeof transferred === 'string' && transferred.length > 0)
@@ -56,7 +68,15 @@ function getInputCharacters(ev: InputEvent): string {
   return ''
 }
 
-function translateDOMEvent(ev: InputEvent): DOMTranslation | false {
+/**
+ * Translates a DOM `beforeinput` event into CR-Text operations.
+ *
+ * @param ev The `beforeinput` event to translate.
+ * @returns The corresponding insert and remove operations, or `false` when the event target is unsupported.
+ */
+export function translateDOMBeforeInputEvent(
+  ev: InputEvent
+): DOMTranslation | false {
   const el = ev.target
   if (!(el instanceof HTMLElement)) return false
 
@@ -92,13 +112,19 @@ function translateDOMEvent(ev: InputEvent): DOMTranslation | false {
   }
 }
 
-export function InputStreamAdapter(
+/**
+ * Prevents the browser's default DOM mutation and applies the equivalent edit to `CRText`.
+ *
+ * @param beforeInputEvent The intercepted `beforeinput` event.
+ * @param crText The replicated text instance that should receive the translated edit.
+ */
+export function BeforeInputStreamAdapter(
   beforeInputEvent: InputEvent,
   crText: CRText
 ): void {
-  beforeInputEvent.preventDefault()
+  void beforeInputEvent.preventDefault()
 
-  const result = translateDOMEvent(beforeInputEvent)
+  const result = translateDOMBeforeInputEvent(beforeInputEvent)
   if (!result) return
 
   const { insert, remove } = result

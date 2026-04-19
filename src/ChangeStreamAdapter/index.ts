@@ -1,5 +1,15 @@
 import type { CRListChange } from '@sovereignbase/convergent-replicated-list'
 
+/**
+ * Applies a `CRText` change event to an editable DOM host.
+ *
+ * For `<input>` and `<textarea>` elements, the adapter updates the control value
+ * via `setRangeText()`. For other editable hosts, it mutates the first text node
+ * and restores the caret position when the host is focused.
+ *
+ * @param changeEvent The `change` event emitted by `CRText`.
+ * @param htmlElement The editable element that should reflect the change.
+ */
 export function ChangeStreamAdapter(
   changeEvent: CustomEvent<CRListChange<string>>,
   htmlElement: HTMLElement
@@ -44,7 +54,7 @@ export function ChangeStreamAdapter(
     const index = Number(key)
 
     if (value === undefined) {
-      textNode.deleteData(index, 1)
+      void textNode.deleteData(index, 1)
       caretOffset = index
     }
   }
@@ -52,7 +62,7 @@ export function ChangeStreamAdapter(
   for (const [key, value] of inserts) {
     if (typeof value === 'string') {
       const index = Number(key)
-      textNode.insertData(index, value)
+      void textNode.insertData(index, value)
       caretOffset = index + value.length
     }
   }
@@ -78,15 +88,15 @@ export function ChangeStreamAdapter(
     const anchor = doc.createElement('span')
     anchor.dataset.caretAnchor = 'true'
     anchor.textContent = '\u200B'
-    htmlElement.append(anchor)
+    void htmlElement.append(anchor)
 
-    range.setStart(anchor.firstChild!, 0)
-    range.collapse(true)
+    void range.setStart(anchor.firstChild!, 0)
+    void range.collapse(true)
   } else {
-    range.setStart(textNode, clampedOffset)
-    range.collapse(true)
+    void range.setStart(textNode, clampedOffset)
+    void range.collapse(true)
   }
 
-  selection.removeAllRanges()
-  selection.addRange(range)
+  void selection.removeAllRanges()
+  void selection.addRange(range)
 }

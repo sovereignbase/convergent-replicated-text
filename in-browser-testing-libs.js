@@ -1,6 +1,6 @@
 import {
   CRText,
-  InputStreamAdapter,
+  BeforeInputStreamAdapter,
   ChangeStreamAdapter,
 } from './dist/index.js'
 
@@ -45,7 +45,7 @@ for (const element of elements) {
 
   void element.addEventListener(
     'beforeinput',
-    (event) => void InputStreamAdapter(event, text)
+    (event) => void BeforeInputStreamAdapter(event, text)
   )
 }
 

@@ -16,9 +16,18 @@ import { CRTextError } from '../.errors/class.js'
 import { transformStringToGraphemeArray } from '../.helpers/index.js'
 import type { CRTextEventMap, CRTextEventListenerFor } from '../.types/index.js'
 
+/**
+ * Represents a convergent replicated text document backed by CR-List state.
+ */
 export class CRText {
   declare private readonly state: CRListState<string>
   declare private readonly eventTarget: EventTarget
+
+  /**
+   * Creates a new `CRText` instance.
+   *
+   * @param snapshot An optional detached snapshot used to hydrate the initial state.
+   */
   constructor(snapshot?: CRListSnapshot<string>) {
     Object.defineProperties(this, {
       state: {
@@ -36,16 +45,20 @@ export class CRText {
     })
   }
   /**
-   * The current number of characters.
+   * Returns the current number of grapheme clusters in the text projection.
    */
   get size(): number {
     return this.state.size
   }
+
   /**
+   * Inserts characters immediately after the specified index.
    *
-   * @param index
-   * @param chars
-   * @returns
+   * Pass `-1` to insert at the beginning of the document.
+   *
+   * @param index The anchor index after which the characters are inserted.
+   * @param characters The text to insert.
+   * @throws {CRTextError} Thrown when the arguments are not a number and string pair.
    */
   insertAfter(index: number, characters: string): void {
     if (typeof index !== 'number' || typeof characters !== 'string')
@@ -76,13 +89,15 @@ export class CRText {
         new CustomEvent('change', { detail: change })
       )
   }
+
   /**
+   * Removes characters starting at the specified index.
    *
-   * @param index  Inclusive
-   * @param removeCount
-   * @returns
+   * @param index The inclusive start index to remove from.
+   * @param removeCount The number of characters to remove.
+   * @throws {CRTextError} Thrown when the arguments are not numeric.
    */
-  removeAfter(index: number, removeCount: number) {
+  removeAfter(index: number, removeCount: number): void {
     if (typeof index !== 'number' || typeof removeCount !== 'number')
       throw new CRTextError(
         'BAD_PARAMS',
@@ -100,7 +115,15 @@ export class CRText {
         new CustomEvent('change', { detail: change })
       )
   }
-  merge(delta: CRListDelta<string>) {
+
+  /**
+   * Merges a remote delta into this replica.
+   *
+   * Dispatches a `change` event when the merge updates the current projection.
+   *
+   * @param delta The remote delta to merge.
+   */
+  merge(delta: CRListDelta<string>): void {
     const change = __merge(this.state, delta)
     if (change) {
       console.log(change)
@@ -109,7 +132,13 @@ export class CRText {
       )
     }
   }
-  acknowledge() {
+
+  /**
+   * Emits an acknowledgement frontier for the current replica state.
+   *
+   * Dispatches an `ack` event when an acknowledgement is produced.
+   */
+  acknowledge(): void {
     const ack = __acknowledge(this.state)
     if (ack) {
       void this.eventTarget.dispatchEvent(
@@ -117,10 +146,20 @@ export class CRText {
       )
     }
   }
-  garbageCollect(frontiers: Array<CRListAck>) {
+
+  /**
+   * Removes tombstoned history acknowledged by every provided frontier.
+   *
+   * @param frontiers The acknowledgement frontiers that permit garbage collection.
+   */
+  garbageCollect(frontiers: Array<CRListAck>): void {
     void __garbageCollect(frontiers, this.state)
   }
-  snapshot() {
+
+  /**
+   * Dispatches a detached snapshot of the current state.
+   */
+  snapshot(): void {
     const snapshot = __snapshot<string>(this.state)
     if (snapshot) {
       this.eventTarget.dispatchEvent(
@@ -153,13 +192,20 @@ export class CRText {
     }
   }
 
+  /**
+   * Returns the current text projection as a string.
+   */
   valueOf(): string {
     return [...this].join('')
   }
 
+  /**
+   * Returns the current text projection when coerced to a primitive.
+   */
   [Symbol.toPrimitive](): string {
     return [...this].join('')
   }
+
   /**
    * Returns the Node.js console inspection representation.
    */
@@ -176,9 +222,9 @@ export class CRText {
   /**
    * Registers an event listener.
    *
-   * @param type - The event type to listen for.
-   * @param listener - The listener to register.
-   * @param options - Listener registration options.
+   * @param type The event type to listen for.
+   * @param listener The listener to register.
+   * @param options Listener registration options.
    */
   addEventListener<K extends keyof CRTextEventMap>(
     type: K,
@@ -195,9 +241,9 @@ export class CRText {
   /**
    * Removes an event listener.
    *
-   * @param type - The event type to stop listening for.
-   * @param listener - The listener to remove.
-   * @param options - Listener removal options.
+   * @param type The event type to stop listening for.
+   * @param listener The listener to remove.
+   * @param options Listener removal options.
    */
   removeEventListener<K extends keyof CRTextEventMap>(
     type: K,

@@ -1193,7 +1193,7 @@ function getInputCharacters(ev) {
   }
   return "";
 }
-function translateDOMEvent(ev) {
+function translateDOMBeforeInputEvent(ev) {
   const el = ev.target;
   if (!(el instanceof HTMLElement)) return false;
   const { selectionStart, selectionEnd } = getElementTextSelection(el);
@@ -1220,9 +1220,9 @@ function translateDOMEvent(ev) {
     } : false
   };
 }
-function InputStreamAdapter(beforeInputEvent, crText) {
+function BeforeInputStreamAdapter(beforeInputEvent, crText) {
   beforeInputEvent.preventDefault();
-  const result = translateDOMEvent(beforeInputEvent);
+  const result = translateDOMBeforeInputEvent(beforeInputEvent);
   if (!result) return;
   const { insert, remove } = result;
   if (insert) {
@@ -3092,7 +3092,7 @@ for (const element of elements) {
   element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement ? element.value = text : element.textContent = text;
   void element.addEventListener(
     "beforeinput",
-    (event) => void InputStreamAdapter(event, text)
+    (event) => void BeforeInputStreamAdapter(event, text)
   );
 }
 text.addEventListener("delta", (ev) => {
