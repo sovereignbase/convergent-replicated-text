@@ -3,30 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Convergent Replicated Text (CR-Text)</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"
-    />
+    <title>Convergent Replicated Text (CR-Text) Browser Demo</title>
+    <meta name="theme-color" content="#050505" />
+    <meta name="author" content="Jori Lehtinen" />
     <meta
       name="description"
-      content="Browser demo for @sovereignbase/convergent-replicated-text, a delta CRDT for text value state."
+      content="Browser demo for @sovereignbase/convergent-replicated-text. Edit the same CRDT-backed text through textarea, input, and contenteditable elements across tabs."
     />
     <meta
       name="keywords"
-      content="
-    crdt,
-    text,
-    replicated,
-    convergent,
-    local-first,
-    distributed-systems,
-    delta-sync,
-    gossip,
-    typescript,
-    sovereignbase"
+      content="crdt, text, collaborative editing, replicated text, convergent, local-first, delta-sync, contenteditable, browser demo, typescript, sovereignbase"
     />
-    <meta name="author" content="Jori Lehtinen" />
     <meta
       name="robots"
       content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
@@ -35,6 +22,28 @@
     <link
       rel="canonical"
       href="https://sovereignbase.dev/convergent-replicated-text/"
+    />
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
+    <link rel="dns-prefetch" href="//cdn.simpleicons.org" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.simpleicons.org" crossorigin />
+    <link rel="modulepreload" href="./index.js" />
+    <link
+      rel="preload"
+      as="style"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="script"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"
+      crossorigin
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"
+      crossorigin
     />
     <link
       rel="icon"
@@ -48,10 +57,13 @@
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content="Sovereignbase" />
-    <meta property="og:title" content="Convergent Replicated Text (CR-Text)" />
+    <meta
+      property="og:title"
+      content="Convergent Replicated Text (CR-Text) Browser Demo"
+    />
     <meta
       property="og:description"
-      content="Browser demo for @sovereignbase/convergent-replicated-text, a delta CRDT for text value state."
+      content="Browser demo for @sovereignbase/convergent-replicated-text. Edit the same CRDT-backed text through textarea, input, and contenteditable elements across tabs."
     />
     <meta
       property="og:url"
@@ -66,13 +78,16 @@
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="Convergent Replicated Text (CR-Text) browser demo"
+      content="Convergent Replicated Text (CR-Text) browser demo with textarea, input, and contenteditable examples"
     />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Convergent Replicated Text (CR-Text)" />
+    <meta
+      name="twitter:title"
+      content="Convergent Replicated Text (CR-Text) Browser Demo"
+    />
     <meta
       name="twitter:description"
-      content="Browser demo for @sovereignbase/convergent-replicated-text, a delta CRDT for text value state."
+      content="Browser demo for @sovereignbase/convergent-replicated-text. Edit the same CRDT-backed text through textarea, input, and contenteditable elements across tabs."
     />
     <meta
       name="twitter:image"
@@ -80,7 +95,7 @@
     />
     <meta
       name="twitter:image:alt"
-      content="Convergent Replicated Text (CR-Text) browser demo"
+      content="Convergent Replicated Text (CR-Text) browser demo with textarea, input, and contenteditable examples"
     />
     <meta name="twitter:creator" content="@jortsupetterson" />
     <script type="application/ld+json">
@@ -124,7 +139,7 @@
             "@type": "WebSite",
             "@id": "https://sovereignbase.dev/convergent-replicated-text/#website",
             "url": "https://sovereignbase.dev/convergent-replicated-text/",
-            "name": "convergent-replicated-text",
+            "name": "Convergent Replicated Text (CR-Text)",
             "inLanguage": "en",
             "publisher": {
               "@id": "https://sovereignbase.dev/convergent-replicated-text/#organization"
@@ -140,10 +155,18 @@
             "codeRepository": "https://github.com/sovereignbase/convergent-replicated-text",
             "license": "https://www.apache.org/licenses/LICENSE-2.0",
             "programmingLanguage": ["TypeScript", "JavaScript"],
-            "runtimePlatform": ["Web Browser", "Web Worker"],
+            "runtimePlatform": [
+              "Node.js",
+              "Web Browser",
+              "Bun",
+              "Deno",
+              "Cloudflare Workers",
+              "Edge Runtime"
+            ],
             "keywords": [
               "crdt",
               "text",
+              "collaborative editing",
               "replicated",
               "convergent",
               "local-first",
@@ -173,8 +196,8 @@
             "@type": "WebPage",
             "@id": "https://sovereignbase.dev/convergent-replicated-text/#webpage",
             "url": "https://sovereignbase.dev/convergent-replicated-text/",
-            "name": "Sovereignbase station client",
-            "description": "Browser demo for @sovereignbase/convergent-replicated-text, a realtime client that synchronizes state between browser tabs.",
+            "name": "Convergent Replicated Text (CR-Text) Browser Demo",
+            "description": "Browser demo for @sovereignbase/convergent-replicated-text. Edit the same CRDT-backed text through textarea, input, and contenteditable elements across tabs.",
             "inLanguage": "en",
             "isPartOf": {
               "@id": "https://sovereignbase.dev/convergent-replicated-text/#website"
@@ -193,7 +216,12 @@
               "url": "https://sovereignbase.dev/sovereignbase_social_sharing_image.png",
               "width": 1200,
               "height": 630
-            }
+            },
+            "relatedLink": [
+              "https://github.com/sovereignbase/convergent-replicated-text",
+              "https://jsr.io/@sovereignbase/convergent-replicated-text",
+              "https://www.npmjs.com/package/@sovereignbase/convergent-replicated-text"
+            ]
           }
         ]
       }
@@ -419,9 +447,11 @@
   <body>
     <main>
       <section class="shell">
-        <h1>A text crdt for Sovereignbase</h1>
+        <h1>Convergent Replicated Text (CR-Text)</h1>
         <p class="lede">
-          Try writing in different elements in multiple browser tabs.
+          Browser demo for a delta CRDT for text value state. Edit the same
+          replicated text through textarea, input, and contenteditable elements
+          across multiple browser tabs.
         </p>
 
         <div class="controls">
@@ -522,7 +552,10 @@ station.addEventListener('message', (ev) => {
     </main>
 
     <script type="module" src="index.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"
+      crossorigin
+    ></script>
     <script>
       hljs.highlightAll()
     </script>
