@@ -98,11 +98,11 @@ for (const element of elements) {
 }
 
 text.addEventListener('delta', (ev) => {
-  station.relay(ev.detail)
+  void station.relay(ev.detail)
 })
 
 station.addEventListener('message', (ev) => {
-  text.merge(ev.detail)
+  void text.merge(ev.detail)
 })
 ```
 
