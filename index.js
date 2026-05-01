@@ -17,16 +17,9 @@ function unsafeStringify(arr, offset = 0) {
 }
 
 // node_modules/uuid/dist/rng.js
-var getRandomValues;
 var rnds8 = new Uint8Array(16);
 function rng() {
-  if (!getRandomValues) {
-    if (typeof crypto === "undefined" || !crypto.getRandomValues) {
-      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
-    }
-    getRandomValues = crypto.getRandomValues.bind(crypto);
-  }
-  return getRandomValues(rnds8);
+  return crypto.getRandomValues(rnds8);
 }
 
 // node_modules/uuid/dist/v7.js

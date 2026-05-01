@@ -71,7 +71,7 @@
     "prettier": "^3.8.3",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "wrangler": "^4.87.0"
+    "wrangler": "4.86.0"
   },
   "dependencies": {
     "@sovereignbase/convergent-replicated-list": "^1.0.8",
