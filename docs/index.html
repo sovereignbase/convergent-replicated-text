@@ -1,0 +1,143 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>@sovereignbase/convergent-replicated-text</title><meta name="description" content="Documentation for @sovereignbase/convergent-replicated-text"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="index.html" class="title">@sovereignbase/convergent-replicated-text</a><div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-menu"></use></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><h1>@sovereignbase/convergent-replicated-text</h1></div><div class="tsd-panel tsd-typography"><p><a href="https://www.npmjs.com/package/@sovereignbase/convergent-replicated-text"><img src="https://img.shields.io/npm/v/@sovereignbase/convergent-replicated-text" alt="npm version"></a>
+<a href="https://github.com/sovereignbase/convergent-replicated-text/actions/workflows/ci.yaml"><img src="https://github.com/sovereignbase/convergent-replicated-text/actions/workflows/ci.yaml/badge.svg?branch=master" alt="CI"></a>
+<a href="https://codecov.io/gh/sovereignbase/convergent-replicated-text"><img src="https://codecov.io/gh/sovereignbase/convergent-replicated-text/branch/master/graph/badge.svg" alt="codecov"></a>
+<a href="LICENSE"><img src="https://img.shields.io/npm/l/@sovereignbase/convergent-replicated-text" alt="license"></a></p>
+<h1 id="convergent-replicated-text" class="tsd-anchor-link">convergent-replicated-text<a href="#convergent-replicated-text" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<p>Convergent Replicated Text (CR-Text), a delta CRDT for text value state.</p>
+<p>Try the demo:</p>
+<ul>
+<li><a href="https://sovereignbase.dev/convergent-replicated-text">https://sovereignbase.dev/convergent-replicated-text</a></li>
+</ul>
+<h2 id="compatibility" class="tsd-anchor-link">Compatibility<a href="#compatibility" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li>Runtimes: Node &gt;= 20, modern browsers, Bun, Deno, Cloudflare Workers, Edge Runtime.</li>
+<li>Module format: ESM + CommonJS.</li>
+<li>Required globals / APIs: <code>EventTarget</code>, <code>CustomEvent</code>, <code>structuredClone</code>.</li>
+<li>TypeScript: bundled types.</li>
+</ul>
+<h2 id="goals" class="tsd-anchor-link">Goals<a href="#goals" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li>Deterministic convergence of the live text projection under asynchronous gossip delivery.</li>
+<li>Consistent behavior across Node, browsers, worker, and edge runtimes.</li>
+<li>Garbage collection possibility without breaking live-text convergence.</li>
+<li>Event-driven API.</li>
+</ul>
+<h2 id="installation" class="tsd-anchor-link">Installation<a href="#installation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="sh"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">@sovereignbase/convergent-replicated-text</span><br/><span class="hl-3"># or</span><br/><span class="hl-0">pnpm</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">@sovereignbase/convergent-replicated-text</span><br/><span class="hl-3"># or</span><br/><span class="hl-0">yarn</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">@sovereignbase/convergent-replicated-text</span><br/><span class="hl-3"># or</span><br/><span class="hl-0">bun</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">@sovereignbase/convergent-replicated-text</span><br/><span class="hl-3"># or</span><br/><span class="hl-0">deno</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">jsr:@sovereignbase/convergent-replicated-text</span><br/><span class="hl-3"># or</span><br/><span class="hl-0">vlt</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-2">jsr:@sovereignbase/convergent-replicated-text</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="usage" class="tsd-anchor-link">Usage<a href="#usage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<h3 id="copy-paste-example" class="tsd-anchor-link">Copy-paste example<a href="#copy-paste-example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<pre><code class="ts"><span class="hl-4">import</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-5">CRText</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">BeforeInputStreamAdapter</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">ChangeStreamAdapter</span><span class="hl-1">,</span><br/><span class="hl-1">} </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@sovereignbase/convergent-replicated-text&#39;</span><br/><br/><span class="hl-4">import</span><span class="hl-1"> { </span><span class="hl-5">StationClient</span><span class="hl-1"> } </span><span class="hl-4">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@sovereignbase/station-client&#39;</span><br/><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">station</span><span class="hl-1"> = </span><span class="hl-6">new</span><span class="hl-1"> </span><span class="hl-0">StationClient</span><span class="hl-1">()</span><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">snapshot</span><span class="hl-1"> = </span><span class="hl-7">JSON</span><span class="hl-1">.</span><span class="hl-0">parse</span><span class="hl-1">(</span><span class="hl-5">localStorage</span><span class="hl-1">.</span><span class="hl-0">getItem</span><span class="hl-1">(</span><span class="hl-2">&#39;state&#39;</span><span class="hl-1">)) ?? </span><span class="hl-6">undefined</span><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">frontiers</span><span class="hl-1"> = </span><span class="hl-7">JSON</span><span class="hl-1">.</span><span class="hl-0">parse</span><span class="hl-1">(</span><span class="hl-5">localStorage</span><span class="hl-1">.</span><span class="hl-0">getItem</span><span class="hl-1">(</span><span class="hl-2">&#39;frontiers&#39;</span><span class="hl-1">)) ?? </span><span class="hl-6">undefined</span><br/><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">text</span><span class="hl-1"> = </span><span class="hl-6">new</span><span class="hl-1"> </span><span class="hl-0">CRText</span><span class="hl-1">(</span><span class="hl-5">snapshot</span><span class="hl-1">)</span><br/><br/><span class="hl-4">if</span><span class="hl-1"> (</span><span class="hl-5">frontiers</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-6">void</span><span class="hl-1"> </span><span class="hl-5">text</span><span class="hl-1">.</span><span class="hl-0">garbageCollect</span><span class="hl-1">(</span><span class="hl-5">frontiers</span><span class="hl-1">)</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-5">text</span><span class="hl-1">.</span><span class="hl-0">addEventListener</span><span class="hl-1">(</span><span class="hl-2">&#39;snapshot&#39;</span><span class="hl-1">, (</span><span class="hl-5">ev</span><span class="hl-1">) </span><span class="hl-6">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-6">void</span><span class="hl-1"> </span><span class="hl-5">localStorage</span><span class="hl-1">.</span><span class="hl-0">setItem</span><span class="hl-1">(</span><span class="hl-2">&#39;state&#39;</span><span class="hl-1">, </span><span class="hl-7">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">(</span><span class="hl-5">ev</span><span class="hl-1">.</span><span class="hl-5">detail</span><span class="hl-1">))</span><br/><span class="hl-1">})</span><br/><br/><span class="hl-5">text</span><span class="hl-1">.</span><span class="hl-0">addEventListener</span><span class="hl-1">(</span><span class="hl-2">&#39;ack&#39;</span><span class="hl-1">, (</span><span class="hl-5">ev</span><span class="hl-1">) </span><span class="hl-6">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-6">void</span><span class="hl-1"> </span><span class="hl-5">localStorage</span><span class="hl-1">.</span><span class="hl-0">setItem</span><span class="hl-1">(</span><span class="hl-2">&#39;frontiers&#39;</span><span class="hl-1">, </span><span class="hl-7">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">([</span><span class="hl-5">ev</span><span class="hl-1">.</span><span class="hl-5">detail</span><span class="hl-1">]))</span><br/><span class="hl-1">})</span><br/><br/><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">elements</span><span class="hl-1"> = [</span><br/><span class="hl-1">  </span><span class="hl-5">document</span><span class="hl-1">.</span><span class="hl-0">getElementById</span><span class="hl-1">(</span><span class="hl-2">&#39;textarea-element&#39;</span><span class="hl-1">),</span><br/><span class="hl-1">  </span><span class="hl-5">document</span><span class="hl-1">.</span><span class="hl-0">getElementById</span><span class="hl-1">(</span><span class="hl-2">&#39;input-element&#39;</span><span class="hl-1">),</span><br/><span class="hl-1">  </span><span class="hl-5">document</span><span class="hl-1">.</span><span class="hl-0">getElementById</span><span class="hl-1">(</span><span class="hl-2">&#39;html-element&#39;</span><span class="hl-1">),</span><br/><span class="hl-1">]</span><br/><br/><span class="hl-5">text</span><span class="hl-1">.</span><span class="hl-0">addEventListener</span><span class="hl-1">(</span><span class="hl-2">&#39;change&#39;</span><span class="hl-1">, (</span><span class="hl-5">event</span><span class="hl-1">) </span><span class="hl-6">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-4">for</span><span class="hl-1"> (</span><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">element</span><span class="hl-1"> </span><span class="hl-6">of</span><span class="hl-1"> </span><span class="hl-5">elements</span><span class="hl-1">) {</span><br/><span class="hl-1">    </span><span class="hl-6">void</span><span class="hl-1"> </span><span class="hl-0">ChangeStreamAdapter</span><span class="hl-1">(</span><span class="hl-5">event</span><span class="hl-1">, </span><span class="hl-5">element</span><span class="hl-1">)</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">  </span><span class="hl-6">void</span><span class="hl-1"> </span><span class="hl-5">text</span><span class="hl-1">.</span><span class="hl-0">snapshot</span><span class="hl-1">()</span><br/><span class="hl-1">  </span><span class="hl-6">void</span><span class="hl-1"> </span><span class="hl-5">text</span><span class="hl-1">.</span><span class="hl-0">acknowledge</span><span class="hl-1">()</span><br/><span class="hl-1">})</span><br/><br/><span class="hl-4">for</span><span class="hl-1"> (</span><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">element</span><span class="hl-1"> </span><span class="hl-6">of</span><span class="hl-1"> </span><span class="hl-5">elements</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-5">element</span><span class="hl-1"> </span><span class="hl-6">instanceof</span><span class="hl-1"> </span><span class="hl-8">HTMLInputElement</span><span class="hl-1"> || </span><span class="hl-5">element</span><span class="hl-1"> </span><span class="hl-6">instanceof</span><span class="hl-1"> </span><span class="hl-8">HTMLTextAreaElement</span><br/><span class="hl-1">    ? (</span><span class="hl-5">element</span><span class="hl-1">.</span><span class="hl-5">value</span><span class="hl-1"> = </span><span class="hl-5">text</span><span class="hl-1">)</span><br/><span class="hl-1">    : (</span><span class="hl-5">element</span><span class="hl-1">.</span><span class="hl-5">textContent</span><span class="hl-1"> = </span><span class="hl-5">text</span><span class="hl-1">)</span><br/><br/><span class="hl-1">  </span><span class="hl-6">void</span><span class="hl-1"> </span><span class="hl-5">element</span><span class="hl-1">.</span><span class="hl-0">addEventListener</span><span class="hl-1">(</span><br/><span class="hl-1">    </span><span class="hl-2">&#39;beforeinput&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    (</span><span class="hl-5">event</span><span class="hl-1">) </span><span class="hl-6">=&gt;</span><span class="hl-1"> </span><span class="hl-6">void</span><span class="hl-1"> </span><span class="hl-0">BeforeInputStreamAdapter</span><span class="hl-1">(</span><span class="hl-5">event</span><span class="hl-1">, </span><span class="hl-5">text</span><span class="hl-1">)</span><br/><span class="hl-1">  )</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-5">text</span><span class="hl-1">.</span><span class="hl-0">addEventListener</span><span class="hl-1">(</span><span class="hl-2">&#39;delta&#39;</span><span class="hl-1">, (</span><span class="hl-5">ev</span><span class="hl-1">) </span><span class="hl-6">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-6">void</span><span class="hl-1"> </span><span class="hl-5">station</span><span class="hl-1">.</span><span class="hl-0">relay</span><span class="hl-1">(</span><span class="hl-5">ev</span><span class="hl-1">.</span><span class="hl-5">detail</span><span class="hl-1">)</span><br/><span class="hl-1">})</span><br/><br/><span class="hl-5">station</span><span class="hl-1">.</span><span class="hl-0">addEventListener</span><span class="hl-1">(</span><span class="hl-2">&#39;message&#39;</span><span class="hl-1">, (</span><span class="hl-5">ev</span><span class="hl-1">) </span><span class="hl-6">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-6">void</span><span class="hl-1"> </span><span class="hl-5">text</span><span class="hl-1">.</span><span class="hl-0">merge</span><span class="hl-1">(</span><span class="hl-5">ev</span><span class="hl-1">.</span><span class="hl-5">detail</span><span class="hl-1">)</span><br/><span class="hl-1">})</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="runtime-behavior" class="tsd-anchor-link">Runtime behavior<a href="#runtime-behavior" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<h3 id="validation-and-errors" class="tsd-anchor-link">Validation and errors<a href="#validation-and-errors" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul>
+<li><code>insertAfter()</code> and <code>removeAfter()</code> validate parameter types and throw <code>CRTextError</code> with the stable code <code>BAD_PARAMS</code> for invalid calls.</li>
+<li><code>insertAfter(-1, text)</code> is the supported way to insert at the beginning of the document.</li>
+<li>Local <code>insertAfter()</code> and <code>removeAfter()</code> emit both <code>delta</code> and <code>change</code>; remote <code>merge()</code> emits <code>change</code> only when the visible text projection changes.</li>
+<li><code>snapshot()</code> emits a detached snapshot event and <code>acknowledge()</code> emits an acknowledgement frontier event.</li>
+</ul>
+<h3 id="safety-and-copying-semantics" class="tsd-anchor-link">Safety and copying semantics<a href="#safety-and-copying-semantics" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul>
+<li><code>CRText</code> stores text as grapheme-cluster entries backed by <code>@sovereignbase/convergent-replicated-list</code>.</li>
+<li><code>toJSON()</code> returns a detached structured-clone-compatible snapshot and <code>toString()</code> serializes that snapshot as JSON.</li>
+<li><code>valueOf()</code>, <code>Symbol.toPrimitive</code>, iteration, and runtime inspect hooks expose the current visible string projection.</li>
+<li><code>BeforeInputStreamAdapter()</code> prevents the browser's default DOM mutation and translates <code>beforeinput</code> events into <code>insertAfter()</code> / <code>removeAfter()</code> calls.</li>
+<li><code>ChangeStreamAdapter()</code> applies <code>change</code> patches to <code>&lt;input&gt;</code>, <code>&lt;textarea&gt;</code>, and <code>contenteditable</code> hosts and restores the caret for focused editable elements.</li>
+</ul>
+<h3 id="convergence-and-compaction" class="tsd-anchor-link">Convergence and compaction<a href="#convergence-and-compaction" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul>
+<li>The convergence target is the visible text returned by <code>valueOf()</code>.</li>
+<li><code>merge()</code> applies remote CR-List deltas to the underlying replica state while preserving the event-driven <code>CRText</code> surface.</li>
+<li><code>garbageCollect(frontiers)</code> compacts tombstoned history after acknowledgement frontiers make it safe to do so.</li>
+</ul>
+<h2 id="tests" class="tsd-anchor-link">Tests<a href="#tests" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="sh"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">test</span>
+</code><button type="button">Copy</button></pre>
+
+<p>What the current test suite covers:</p>
+<ul>
+<li>Coverage on built <code>dist/**/*.js</code>: <code>100%</code> statements, <code>100%</code> branches, <code>100%</code> functions, and <code>100%</code> lines.</li>
+<li>Public API surface: <code>CRText</code>, <code>CRTextError</code>, <code>BeforeInputStreamAdapter</code>, <code>translateDOMBeforeInputEvent</code>, and <code>ChangeStreamAdapter</code>.</li>
+<li><code>CRText</code> invariants: snapshot hydration, string coercion, grapheme-aware insert/remove semantics, event channels, duplicate delta idempotency, and garbage-collection-preserved text convergence.</li>
+<li>DOM adapter behavior for input, textarea, and contenteditable hosts, including selection translation and caret restoration edge paths.</li>
+<li>Deterministic convergence stress for shuffled gossip delivery, replica restarts, and <code>valueOf()</code> equality across replicas after randomized local edits.</li>
+<li>End-to-end runtime matrix:
+<ul>
+<li>Node ESM</li>
+<li>Node CJS</li>
+<li>Bun ESM</li>
+<li>Bun CJS</li>
+<li>Deno ESM</li>
+<li>Cloudflare Workers ESM</li>
+<li>Edge Runtime ESM</li>
+<li>Browsers via Playwright: Chromium, Firefox, WebKit, mobile Chrome, mobile Safari</li>
+</ul>
+</li>
+</ul>
+<h2 id="benchmarks" class="tsd-anchor-link">Benchmarks<a href="#benchmarks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="sh"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">bench</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Last measured on Node <code>v22.14.0</code> (<code>win32 x64</code>).</p>
+<table>
+<thead>
+<tr>
+<th>group</th>
+<th>scenario</th>
+<th style="text-align:right">chars</th>
+<th>workload</th>
+<th style="text-align:right">ops</th>
+<th style="text-align:right">ms</th>
+<th style="text-align:right">ms/op</th>
+<th style="text-align:right">ops/sec</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>throughput</code></td>
+<td><code>typing / append random article</code></td>
+<td style="text-align:right">12,500</td>
+<td><code>1010 append operations</code></td>
+<td style="text-align:right">24,240</td>
+<td style="text-align:right">2,301.96</td>
+<td style="text-align:right">0.09</td>
+<td style="text-align:right">10,530.14</td>
+</tr>
+<tr>
+<td><code>throughput</code></td>
+<td><code>editing / random inserts and deletes</code></td>
+<td style="text-align:right">15,153</td>
+<td><code>2000 random insert/remove operations</code></td>
+<td style="text-align:right">24,000</td>
+<td style="text-align:right">6,638.76</td>
+<td style="text-align:right">0.28</td>
+<td style="text-align:right">3,615.13</td>
+</tr>
+<tr>
+<td><code>projection</code></td>
+<td><code>snapshot / toJSON revised article</code></td>
+<td style="text-align:right">15,153</td>
+<td><code>detached snapshot</code></td>
+<td style="text-align:right">240</td>
+<td style="text-align:right">6,020.95</td>
+<td style="text-align:right">25.09</td>
+<td style="text-align:right">39.86</td>
+</tr>
+<tr>
+<td><code>projection</code></td>
+<td><code>valueOf / materialize current string</code></td>
+<td style="text-align:right">15,153</td>
+<td><code>string projection</code></td>
+<td style="text-align:right">360</td>
+<td style="text-align:right">8,024.94</td>
+<td style="text-align:right">22.29</td>
+<td style="text-align:right">44.86</td>
+</tr>
+</tbody>
+</table>
+<h2 id="license" class="tsd-anchor-link">License<a href="#license" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Apache-2.0</p>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#convergent-replicated-text"><span>convergent-<wbr/>replicated-<wbr/>text</span></a><ul><li><a href="#compatibility"><span>Compatibility</span></a></li><li><a href="#goals"><span>Goals</span></a></li><li><a href="#installation"><span>Installation</span></a></li><li><a href="#usage"><span>Usage</span></a></li><li><ul><li><a href="#copy-paste-example"><span>Copy-<wbr/>paste example</span></a></li></ul></li><li><a href="#runtime-behavior"><span>Runtime behavior</span></a></li><li><ul><li><a href="#validation-and-errors"><span>Validation and errors</span></a></li><li><a href="#safety-and-copying-semantics"><span>Safety and copying semantics</span></a></li><li><a href="#convergence-and-compaction"><span>Convergence and compaction</span></a></li></ul></li><li><a href="#tests"><span>Tests</span></a></li><li><a href="#benchmarks"><span>Benchmarks</span></a></li><li><a href="#license"><span>License</span></a></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="modules.html">@sovereignbase/convergent-replicated-text</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>
