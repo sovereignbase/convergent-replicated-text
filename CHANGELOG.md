@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/sovereignbase/convergent-replicated-text/compare/v1.0.1...v1.0.2) (2026-05-03)
+
+
+### Bug Fixes
+
+* export CRText specific types & add typedoc ([97e8190](https://github.com/sovereignbase/convergent-replicated-text/commit/97e81901e1b804353f81dbadd97c61844e22f5a6))
+
 ## [1.0.1](https://github.com/sovereignbase/convergent-replicated-text/compare/v1.0.0...v1.0.1) (2026-05-01)
 
 
