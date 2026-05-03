@@ -1,9 +1,20 @@
 import type {
   CRListSnapshot,
   CRListChange,
-  CRListDelta,
   CRListAck,
+  CRListState,
 } from '@sovereignbase/convergent-replicated-list'
+
+/** CRText specific alias for CRListState */
+export type CRTextState = CRListState<string>
+/** CRText specific alias for CRListSnapshot */
+export type CRTextSnapshot = CRListSnapshot<string>
+/** CRText specific alias for CRListChange */
+export type CRTextChange = CRListChange<string>
+/** Partial CRTextSnapshot */
+export type CRTextDelta = Partial<CRTextSnapshot>
+/** CRText specific alias for CRListAck */
+export type CRTextAck = CRListAck
 
 /**
  * Maps `CRText` event names to their corresponding `CustomEvent.detail` payloads.
@@ -12,22 +23,22 @@ export type CRTextEventMap = {
   /**
    * Fired after `snapshot()` materializes a detached snapshot.
    */
-  snapshot: CRListSnapshot<string>
+  snapshot: CRTextSnapshot
 
   /**
    * Fired after local or merged operations change the visible text projection.
    */
-  change: CRListChange<string>
+  change: CRTextChange
 
   /**
    * Fired after a local edit produces a replicable delta payload.
    */
-  delta: CRListDelta<string>
+  delta: CRTextDelta
 
   /**
    * Fired after `acknowledge()` yields a frontier acknowledgement.
    */
-  ack: CRListAck
+  ack: CRTextAck
 }
 
 /**

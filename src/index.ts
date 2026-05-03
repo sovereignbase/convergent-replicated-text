@@ -5,3 +5,4 @@ export {
   translateDOMBeforeInputEvent,
 } from './BeforeInputStreamAdapter/index.js'
 export { ChangeStreamAdapter } from './ChangeStreamAdapter/index.js'
+export type * from './.types/index.js'

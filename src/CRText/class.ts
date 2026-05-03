@@ -7,20 +7,23 @@ import {
   __acknowledge,
   __garbageCollect,
   __snapshot,
-  type CRListState,
-  type CRListSnapshot,
-  type CRListDelta,
-  type CRListAck,
 } from '@sovereignbase/convergent-replicated-list'
 import { CRTextError } from '../.errors/class.js'
 import { transformStringToGraphemeArray } from '../.helpers/index.js'
-import type { CRTextEventMap, CRTextEventListenerFor } from '../.types/index.js'
+import type {
+  CRTextEventMap,
+  CRTextEventListenerFor,
+  CRTextState,
+  CRTextSnapshot,
+  CRTextDelta,
+  CRTextAck,
+} from '../.types/index.js'
 
 /**
  * Represents a convergent replicated text document backed by CR-List state.
  */
 export class CRText {
-  declare private readonly state: CRListState<string>
+  declare private readonly state: CRTextState
   declare private readonly eventTarget: EventTarget
 
   /**
@@ -28,7 +31,7 @@ export class CRText {
    *
    * @param snapshot An optional detached snapshot used to hydrate the initial state.
    */
-  constructor(snapshot?: CRListSnapshot<string>) {
+  constructor(snapshot?: CRTextSnapshot) {
     Object.defineProperties(this, {
       state: {
         value: __create<string>(snapshot),
@@ -123,7 +126,7 @@ export class CRText {
    *
    * @param delta The remote delta to merge.
    */
-  merge(delta: CRListDelta<string>): void {
+  merge(delta: CRTextDelta): void {
     const change = __merge(this.state, delta)
     if (change) {
       void this.eventTarget.dispatchEvent(
@@ -151,7 +154,7 @@ export class CRText {
    *
    * @param frontiers The acknowledgement frontiers that permit garbage collection.
    */
-  garbageCollect(frontiers: Array<CRListAck>): void {
+  garbageCollect(frontiers: Array<CRTextAck>): void {
     void __garbageCollect(frontiers, this.state)
   }
 
@@ -171,7 +174,7 @@ export class CRText {
    *
    * Called automatically by `JSON.stringify`.
    */
-  toJSON(): CRListSnapshot<string> {
+  toJSON(): CRTextSnapshot {
     return __snapshot<string>(this.state)
   }
   /**
