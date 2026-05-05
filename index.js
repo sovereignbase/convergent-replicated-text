@@ -3233,9 +3233,62 @@ var elements = [
   document.getElementById('input-element'),
   document.getElementById('html-element'),
 ]
+var mergeButton = document.getElementById('merge-button')
+var syncModeButtons = document.querySelectorAll('[data-sync-mode]')
+var syncMode = 'auto'
+var manualInputElement
+var isFlushingManualSync = false
+var pendingLocalChanges = []
+var pendingOutgoingDeltas = []
+var pendingIncomingDeltas = []
+function flushManualUi() {
+  for (const { detail, sourceElement } of pendingLocalChanges.splice(0)) {
+    for (const element of elements) {
+      if (element === sourceElement) continue
+      void ChangeStreamAdapter({ detail }, element)
+    }
+  }
+}
+function flushManualSync() {
+  flushManualUi()
+  isFlushingManualSync = true
+  try {
+    for (const delta of pendingIncomingDeltas.splice(0)) {
+      void text.merge(delta)
+    }
+  } finally {
+    isFlushingManualSync = false
+  }
+  for (const delta of pendingOutgoingDeltas.splice(0)) {
+    void station.relay(delta)
+  }
+}
+function setSyncMode(nextMode) {
+  syncMode = nextMode
+  mergeButton.hidden = syncMode !== 'manual'
+  for (const button of syncModeButtons) {
+    button.setAttribute(
+      'aria-pressed',
+      button.dataset.syncMode === syncMode ? 'true' : 'false'
+    )
+  }
+  if (syncMode === 'auto') {
+    flushManualSync()
+  }
+}
 text.addEventListener('change', (event) => {
-  for (const element of elements) {
-    void ChangeStreamAdapter(event, element)
+  if (syncMode === 'manual' && !isFlushingManualSync) {
+    if (manualInputElement) {
+      void ChangeStreamAdapter(event, manualInputElement)
+    }
+    pendingLocalChanges.push({
+      detail: event.detail,
+      sourceElement: manualInputElement,
+    })
+  } else {
+    for (const element of elements) {
+      void ChangeStreamAdapter(event, element)
+    }
   }
   void text.snapshot()
   void text.acknowledge()
@@ -3244,14 +3297,36 @@ for (const element of elements) {
   element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement
     ? (element.value = text)
     : (element.textContent = text)
-  void element.addEventListener(
-    'beforeinput',
-    (event) => void BeforeInputStreamAdapter(event, text)
-  )
+  void element.addEventListener('beforeinput', (event) => {
+    manualInputElement = syncMode === 'manual' ? element : void 0
+    try {
+      void BeforeInputStreamAdapter(event, text)
+    } finally {
+      manualInputElement = void 0
+    }
+  })
 }
+mergeButton.addEventListener('click', flushManualSync)
+for (const button of syncModeButtons) {
+  button.addEventListener('click', () => {
+    const nextMode = button.dataset.syncMode
+    if (nextMode === 'auto' || nextMode === 'manual') {
+      setSyncMode(nextMode)
+    }
+  })
+}
+setSyncMode('auto')
 text.addEventListener('delta', (ev) => {
-  void station.relay(ev.detail)
+  if (syncMode === 'auto') {
+    void station.relay(ev.detail)
+    return
+  }
+  pendingOutgoingDeltas.push(ev.detail)
 })
 station.addEventListener('message', (ev) => {
-  void text.merge(ev.detail)
+  if (syncMode === 'auto') {
+    void text.merge(ev.detail)
+    return
+  }
+  pendingIncomingDeltas.push(ev.detail)
 })

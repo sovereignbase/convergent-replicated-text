@@ -284,6 +284,43 @@
         gap: 1rem;
       }
 
+      .sync-mode {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+
+      .sync-mode-label {
+        color: rgba(255, 255, 255, 0.76);
+        font-size: 0.95rem;
+      }
+
+      .sync-mode-options {
+        display: inline-flex;
+        gap: 0.25rem;
+        padding: 0.25rem;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        background: #050505;
+      }
+
+      .sync-mode-option {
+        width: auto;
+        min-height: 2.25rem;
+        padding: 0.55rem 0.9rem;
+        border: 0;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.76);
+        font-size: 0.9rem;
+      }
+
+      .sync-mode-option[aria-pressed='true'] {
+        background: #fff;
+        color: #000;
+      }
+
       label {
         display: grid;
         gap: 0.55rem;
@@ -477,6 +514,28 @@
         </p>
 
         <div class="controls">
+          <div class="sync-mode">
+            <span class="sync-mode-label">Sync mode</span>
+            <div class="sync-mode-options" role="group" aria-label="Sync mode">
+              <button
+                type="button"
+                class="sync-mode-option"
+                data-sync-mode="auto"
+                aria-pressed="true"
+              >
+                Auto
+              </button>
+              <button
+                type="button"
+                class="sync-mode-option"
+                data-sync-mode="manual"
+                aria-pressed="false"
+              >
+                Manual
+              </button>
+            </div>
+          </div>
+
           <label for="textarea-element">
             Textarea
             <textarea id="textarea-element"></textarea>
@@ -491,6 +550,10 @@
             Div with contenteditable
             <div contenteditable id="html-element"></div>
           </label>
+
+          <button id="merge-button" type="button" class="secondary" hidden>
+            Merge
+          </button>
         </div>
 
         <pre><code class="language-javascript">
@@ -525,11 +588,73 @@ const elements = [
   document.getElementById('input-element'),
   document.getElementById('html-element'),
 ]
+const mergeButton = document.getElementById('merge-button')
+const syncModeButtons = document.querySelectorAll('[data-sync-mode]')
+
+let syncMode = 'auto'
+let manualInputElement
+let isFlushingManualSync = false
+const pendingLocalChanges = []
+const pendingOutgoingDeltas = []
+const pendingIncomingDeltas = []
+
+function flushManualUi() {
+  for (const { detail, sourceElement } of pendingLocalChanges.splice(0)) {
+    for (const element of elements) {
+      if (element === sourceElement) continue
+      void ChangeStreamAdapter({ detail }, element)
+    }
+  }
+}
+
+function flushManualSync() {
+  flushManualUi()
+
+  isFlushingManualSync = true
+  try {
+    for (const delta of pendingIncomingDeltas.splice(0)) {
+      void text.merge(delta)
+    }
+  } finally {
+    isFlushingManualSync = false
+  }
+
+  for (const delta of pendingOutgoingDeltas.splice(0)) {
+    void station.relay(delta)
+  }
+}
+
+function setSyncMode(nextMode) {
+  syncMode = nextMode
+  mergeButton.hidden = syncMode !== 'manual'
+
+  for (const button of syncModeButtons) {
+    button.setAttribute(
+      'aria-pressed',
+      button.dataset.syncMode === syncMode ? 'true' : 'false'
+    )
+  }
+
+  if (syncMode === 'auto') {
+    flushManualSync()
+  }
+}
 
 text.addEventListener('change', (event) => {
-  for (const element of elements) {
-    void ChangeStreamAdapter(event, element)
+  if (syncMode === 'manual' && !isFlushingManualSync) {
+    if (manualInputElement) {
+      void ChangeStreamAdapter(event, manualInputElement)
+    }
+    pendingLocalChanges.push({
+      detail: event.detail,
+      sourceElement: manualInputElement,
+    })
+  } else {
+    for (const element of elements) {
+      void ChangeStreamAdapter(event, element)
+    }
   }
+
   void text.snapshot()
   void text.acknowledge()
 })
@@ -541,16 +666,46 @@ for (const element of elements) {
 
   void element.addEventListener(
     'beforeinput',
-    (event) => void BeforeInputStreamAdapter(event, text)
+    (event) => {
+      manualInputElement = syncMode === 'manual' ? element : undefined
+      try {
+        void BeforeInputStreamAdapter(event, text)
+      } finally {
+        manualInputElement = undefined
+      }
+    }
   )
 }
 
+mergeButton.addEventListener('click', flushManualSync)
+
+for (const button of syncModeButtons) {
+  button.addEventListener('click', () => {
+    const nextMode = button.dataset.syncMode
+    if (nextMode === 'auto' || nextMode === 'manual') {
+      setSyncMode(nextMode)
+    }
+  })
+}
+
+setSyncMode('auto')
+
 text.addEventListener('delta', (ev) => {
-  void station.relay(ev.detail)
+  if (syncMode === 'auto') {
+    void station.relay(ev.detail)
+    return
+  }
+
+  pendingOutgoingDeltas.push(ev.detail)
 })
 
 station.addEventListener('message', (ev) => {
-  void text.merge(ev.detail)
+  if (syncMode === 'auto') {
+    void text.merge(ev.detail)
+    return
+  }
+
+  pendingIncomingDeltas.push(ev.detail)
 })
 </code></pre>
       </section>

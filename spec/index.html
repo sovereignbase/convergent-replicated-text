@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Convergent Replicated Text (CR-Text)</title>
+    <meta name="color-scheme" content="dark" />
+    <meta
+      name="description"
+      content="Specification and reference JavaScript binding for a convergent replicated text delta CRDT backed by CR-List, grapheme-cluster editing, tombstone acknowledgements, and garbage collection."
+    />
+    <meta
+      name="keywords"
+      content="cr-text, convergent replicated text, crdt, collaborative text, local-first, grapheme clusters, delta, snapshot, acknowledgement, garbage collection, javascript, typescript"
+    />
+    <meta name="author" content="Jori Lehtinen" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta name="application-name" content="convergent-replicated-text" />
+    <link
+      rel="canonical"
+      href="https://sovereignbase.dev/convergent-replicated-text/spec/"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://sovereignbase.dev/sovereignbase_logo.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="https://sovereignbase.dev/sovereignbase_logo.png"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="Sovereignbase" />
+    <meta property="og:title" content="Convergent Replicated Text (CR-Text)" />
+    <meta
+      property="og:description"
+      content="Specification and reference JavaScript binding for a convergent replicated text delta CRDT backed by CR-List, grapheme-cluster editing, tombstone acknowledgements, and garbage collection."
+    />
+    <meta
+      property="og:url"
+      content="https://sovereignbase.dev/convergent-replicated-text/spec/"
+    />
+    <meta
+      property="og:image"
+      content="https://sovereignbase.dev/sovereignbase_social_sharing_image.png"
+    />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Sovereignbase social sharing image for the CR-Text specification."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Convergent Replicated Text (CR-Text)" />
+    <meta
+      name="twitter:description"
+      content="Specification and reference JavaScript binding for a convergent replicated text delta CRDT backed by CR-List, grapheme-cluster editing, tombstone acknowledgements, and garbage collection."
+    />
+    <meta
+      name="twitter:image"
+      content="https://sovereignbase.dev/sovereignbase_social_sharing_image.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Sovereignbase social sharing image for the CR-Text specification."
+    />
+    <meta name="twitter:creator" content="@jortsupetterson" />
+    <script
+      src="https://www.w3.org/Tools/respec/respec-w3c"
+      class="remove"
+      defer
+    ></script>
+    <script class="remove">
+      var respecConfig = {
+        specStatus: 'unofficial',
+        shortName: 'convergent-replicated-text',
+        github: 'sovereignbase/convergent-replicated-text',
+        latestVersion: null,
+        edDraftURI: null,
+        editors: [
+          { name: 'Jori Lehtinen', url: 'https://github.com/jortsupetterson' },
+          {
+            name: 'GPT-5.4',
+            url: 'https://openai.com/en-US/index/introducing-gpt-5-4/',
+          },
+        ],
+        xref: 'web-platform',
+        lint: {
+          'informative-dfn': true,
+          'local-refs-exist': true,
+          'no-unused-dfns': true,
+        },
+        localBiblio: {
+          CRLIST: {
+            title: 'Convergent Replicated List (CR-List)',
+            href: 'https://sovereignbase.dev/convergent-replicated-list/',
+            publisher: 'Sovereignbase',
+          },
+          DOM: {
+            title: 'DOM Standard',
+            href: 'https://dom.spec.whatwg.org/',
+            publisher: 'WHATWG',
+          },
+          ECMA402: {
+            title: 'ECMAScript Internationalization API Specification',
+            href: 'https://tc39.es/ecma402/',
+            publisher: 'Ecma International',
+          },
+          INFRA: {
+            title: 'Infra',
+            href: 'https://infra.spec.whatwg.org/',
+            publisher: 'WHATWG',
+          },
+          MARTIN_KLEPPMANN: {
+            title: 'CRDTs: The Hard Parts',
+            href: 'https://martin.kleppmann.com/2020/07/06/crdt-hard-parts-hydra.html',
+            publisher: 'Martin Kleppmann',
+            date: '2020-06',
+          },
+          RFC9562: {
+            title: 'Universally Unique IDentifiers (UUIDs)',
+            href: 'https://www.rfc-editor.org/rfc/rfc9562',
+            publisher: 'IETF',
+            date: '2024-05',
+          },
+        },
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#organization",
+            "name": "Sovereignbase",
+            "url": "https://github.com/sovereignbase",
+            "alternateName": ["@sovereignbase"],
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://sovereignbase.dev/sovereignbase_logo.png",
+              "width": 320,
+              "height": 320
+            },
+            "sameAs": [
+              "https://github.com/sovereignbase",
+              "https://jsr.io/@sovereignbase",
+              "https://www.npmjs.com/org/sovereignbase"
+            ]
+          },
+          {
+            "@type": "Person",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#author",
+            "name": "Jori Lehtinen",
+            "url": "https://github.com/jortsupetterson",
+            "alternateName": ["jortsupetterson", "@jortsupetterson"],
+            "sameAs": [
+              "https://github.com/jortsupetterson",
+              "https://www.npmjs.com/~jortsupetterson",
+              "https://jsr.io/user/ab186a13-a64f-429e-a757-927aa4fa6e6c",
+              "https://linkedin.com/in/jortsupetterson",
+              "https://x.com/jortsupetterson",
+              "https://www.youtube.com/@jortsupetterson"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#website",
+            "url": "https://sovereignbase.dev/convergent-replicated-text/spec/",
+            "name": "convergent-replicated-text",
+            "inLanguage": "en",
+            "publisher": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#organization"
+            }
+          },
+          {
+            "@type": "SoftwareSourceCode",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#software",
+            "name": "@sovereignbase/convergent-replicated-text",
+            "alternateName": ["convergent-replicated-text", "cr-text"],
+            "url": "https://sovereignbase.dev/convergent-replicated-text/spec/",
+            "description": "Convergent replicated text delta CRDT backed by CR-List, grapheme-cluster editing, tombstone acknowledgements, and garbage collection.",
+            "codeRepository": "https://github.com/sovereignbase/convergent-replicated-text",
+            "license": "https://www.apache.org/licenses/LICENSE-2.0",
+            "programmingLanguage": ["TypeScript", "JavaScript"],
+            "runtimePlatform": [
+              "Node.js",
+              "Web Browser",
+              "Bun",
+              "Deno",
+              "Cloudflare Workers",
+              "Edge Runtime"
+            ],
+            "keywords": [
+              "convergent",
+              "replicated",
+              "text",
+              "crdt",
+              "delta",
+              "local-first",
+              "grapheme-clusters",
+              "convergent-replicated-text",
+              "cr-text"
+            ],
+            "image": "https://sovereignbase.dev/sovereignbase_social_sharing_image.png",
+            "isAccessibleForFree": true,
+            "author": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#author"
+            },
+            "maintainer": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#organization"
+            },
+            "publisher": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#organization"
+            },
+            "sameAs": [
+              "https://jsr.io/@sovereignbase/convergent-replicated-text/",
+              "https://www.npmjs.com/package/@sovereignbase/convergent-replicated-text"
+            ]
+          },
+          {
+            "@type": "TechArticle",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#specification",
+            "headline": "Convergent Replicated Text (CR-Text)",
+            "name": "Convergent Replicated Text (CR-Text)",
+            "url": "https://sovereignbase.dev/convergent-replicated-text/spec/",
+            "description": "Specification and reference JavaScript binding for a convergent replicated text delta CRDT backed by CR-List, grapheme-cluster editing, tombstone acknowledgements, and garbage collection.",
+            "inLanguage": "en",
+            "isPartOf": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#website"
+            },
+            "mainEntityOfPage": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#webpage"
+            },
+            "about": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#software"
+            },
+            "author": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#author"
+            },
+            "publisher": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#organization"
+            },
+            "image": {
+              "@type": "ImageObject",
+              "url": "https://sovereignbase.dev/sovereignbase_social_sharing_image.png",
+              "width": 1200,
+              "height": 630
+            }
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#webpage",
+            "url": "https://sovereignbase.dev/convergent-replicated-text/spec/",
+            "name": "Convergent Replicated Text (CR-Text)",
+            "description": "Specification and reference JavaScript binding for a convergent replicated text delta CRDT backed by CR-List, grapheme-cluster editing, tombstone acknowledgements, and garbage collection.",
+            "inLanguage": "en",
+            "isPartOf": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#website"
+            },
+            "about": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#software"
+            },
+            "author": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#author"
+            },
+            "publisher": {
+              "@id": "https://sovereignbase.dev/convergent-replicated-text/spec/#organization"
+            },
+            "primaryImageOfPage": {
+              "@type": "ImageObject",
+              "url": "https://sovereignbase.dev/sovereignbase_social_sharing_image.png",
+              "width": 1200,
+              "height": 630
+            },
+            "relatedLink": [
+              "https://github.com/sovereignbase",
+              "https://jsr.io/@sovereignbase",
+              "https://www.npmjs.com/org/sovereignbase",
+              "https://github.com/sovereignbase/convergent-replicated-text",
+              "https://jsr.io/@sovereignbase/convergent-replicated-text/",
+              "https://www.npmjs.com/package/@sovereignbase/convergent-replicated-text",
+              "https://github.com/jortsupetterson",
+              "https://www.npmjs.com/~jortsupetterson",
+              "https://jsr.io/user/ab186a13-a64f-429e-a757-927aa4fa6e6c",
+              "https://linkedin.com/in/jortsupetterson",
+              "https://x.com/jortsupetterson",
+              "https://www.youtube.com/@jortsupetterson"
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <section id="abstract">
+      <p>
+        This document defines Convergent Replicated Text (CR-Text), a delta CRDT
+        for replicated text value state. CR-Text represents the visible string
+        as an ordered sequence of grapheme-cluster string values backed by
+        CR-List [[CRLIST]].
+      </p>
+      <p>
+        The specification defines the text projection, local insert and remove
+        operations, merge and compaction behavior inherited from CR-List, event
+        dispatching, and one conforming JavaScript binding.
+      </p>
+    </section>
+
+    <section id="sotd">
+      <p>
+        CR-Text is designed to serve as a small local-first text primitive for
+        intermittently connected browser, worker, server, and edge runtimes.
+      </p>
+      <p>
+        This specification is maintained alongside a reference implementation.
+      </p>
+
+      <p>To use the reference implementation see:</p>
+      <ul>
+        <li>
+          <a
+            href="https://www.npmjs.com/package/@sovereignbase/convergent-replicated-text"
+            >NPM Registry</a
+          >
+        </li>
+        <li>
+          <a href="https://jsr.io/@sovereignbase/convergent-replicated-text"
+            >JSR Registry</a
+          >
+        </li>
+        <li>
+          <a href="https://sovereignbase.dev/convergent-replicated-text/"
+            >Browser demo</a
+          >
+        </li>
+      </ul>
+
+      <p>Inspired by [[MARTIN_KLEPPMANN]].</p>
+    </section>
+
+    <section id="conformance">
+      <p>
+        Unless otherwise stated, data-structure and algorithm terms such as
+        <em>list</em>, <em>map</em>, <em>record</em>, <em>sequence</em>,
+        <em>parameters</em>, <em>variables</em>, and <em>iterate</em> are used
+        with the meanings defined by Infra [[INFRA]].
+      </p>
+      <p>
+        A conforming implementation MUST preserve the visible text convergence,
+        grapheme-cluster editing, event ordering, and tombstone-safety
+        constraints defined by this specification and by its CR-List substrate
+        [[CRLIST]].
+      </p>
+    </section>
+
+    <section>
+      <h2>Terminology</h2>
+      <p>
+        A <dfn>CR-Text replica</dfn> is one independently mutable instance of
+        the data structure.
+      </p>
+      <p>
+        A <dfn>grapheme cluster</dfn> is the user-perceived text segment
+        produced by ECMAScript internationalization segmentation with
+        <code>granularity</code> set to <code>"grapheme"</code> [[ECMA402]].
+      </p>
+      <p>
+        A <dfn>text value</dfn> is one string value stored as a CR-List entry.
+        Each text value represents one <a>grapheme cluster</a>.
+      </p>
+      <p>
+        A <dfn>text projection</dfn> is the consumer-facing string formed by
+        concatenating the visible <a>text value</a>(s) in CR-List order.
+      </p>
+      <p>
+        A <dfn>text index</dfn> is a zero-based position in the current
+        <a>text projection</a>, counted in visible <a>text value</a>(s).
+      </p>
+      <p>
+        A <dfn>snapshot</dfn> is the detached structured-clone-compatible
+        serialized state of a <a>CR-Text replica</a>. It has the same shape as a
+        CR-List snapshot whose value payloads are strings [[CRLIST]].
+      </p>
+      <p>
+        A <dfn>delta</dfn> is a partial <a>snapshot</a> containing only the
+        values or tombstones a replica wishes to share.
+      </p>
+      <p>
+        An <dfn>acknowledgement frontier</dfn> is the CR-List acknowledgement
+        frontier produced for the current replica state [[CRLIST]].
+      </p>
+      <p>
+        A <dfn>change patch</dfn> is a sparse record whose keys are decimal
+        string forms of <a>text index</a>(s). Inserted indexes map to string
+        values and deleted indexes map to <code>undefined</code>.
+      </p>
+    </section>
+
+    <section id="core-model">
+      <h2>Core Model</h2>
+      <p>
+        A <a>CR-Text replica</a> is a text-specialized projection over CR-List.
+        The underlying CR-List stores strings, and each visible list value is
+        interpreted as one <a>text value</a>.
+      </p>
+      <p>
+        Local insertions split the supplied string into <a>grapheme cluster</a>
+        values and append or prepend those values into the underlying CR-List.
+        Local removals delete a contiguous range of visible text values from the
+        underlying CR-List.
+      </p>
+      <p>
+        Merge, snapshot, acknowledgement, and garbage-collection behavior are
+        inherited from CR-List. The convergence target is the
+        <a>text projection</a>, not identical internal tombstone storage at
+        every intermediate step.
+      </p>
+      <p>
+        Snapshot and delta ingress is intentionally tolerant through the CR-List
+        substrate. Malformed entries ignored by CR-List do not become visible
+        text.
+      </p>
+    </section>
+
+    <section>
+      <h2>Data Structure</h2>
+      <p>
+        The same logical replica can be viewed as the CR-List-compatible
+        snapshot used for transport, the runtime projection held by the binding,
+        and the final consumer-facing string.
+      </p>
+
+      <section>
+        <h3>Snapshot</h3>
+        <pre class="json">
+{
+  "values": [
+    {
+      "uuidv7": "018f6a2b-7c8d-7000-8000-000000000001",
+      "value": "H",
+      "predecessor": "\\u0000"
+    },
+    {
+      "uuidv7": "018f6a2b-7c8d-7000-8000-000000000002",
+      "value": "i",
+      "predecessor": "018f6a2b-7c8d-7000-8000-000000000001"
+    }
+  ],
+  "tombstones": []
+}
+        </pre>
+      </section>
+
+      <section>
+        <h3>Runtime</h3>
+        <pre class="js">
+{
+  size: number,
+  cursor: TextStateEntry | undefined,
+  values: Map&lt;UUIDv7Identifier, TextStateEntry&gt;,
+  tombstones: Set&lt;UUIDv7Identifier&gt;
+}
+
+type TextStateEntry = {
+  uuidv7: UUIDv7Identifier,
+  value: GraphemeCluster,
+  predecessor: UUIDv7Identifier | RootPredecessor,
+  index: number,
+  prev: TextStateEntry | undefined,
+  next: TextStateEntry | undefined
+}
+        </pre>
+        <p>
+          <code>UUIDv7Identifier</code> denotes the UUID version 7 identifiers
+          used by CR-List [[RFC9562]]. <code>RootPredecessor</code> denotes the
+          CR-List root predecessor sentinel <code>'\0'</code> [[CRLIST]].
+        </p>
+      </section>
+
+      <section>
+        <h3>Consumer</h3>
+        <pre class="json">
+"Hi"
+        </pre>
+      </section>
+    </section>
+
+    <section>
+      <h2>Core Algorithms</h2>
+
+      <section>
+        <h3>Text Projection</h3>
+
+        <section>
+          <h4 id="segment-characters">Segment Characters</h4>
+          <ol class="algorithm">
+            <li>Let <var>input</var> be the supplied string.</li>
+            <li>
+              Create an ECMAScript <code>Intl.Segmenter</code> with
+              <code>granularity</code> set to <code>"grapheme"</code>
+              [[ECMA402]].
+            </li>
+            <li>
+              Segment <var>input</var> with that segmenter in source order.
+            </li>
+            <li>
+              Return the list of segment strings. Each returned string is a
+              <a>grapheme cluster</a>.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h4 id="materialize-text-projection">Materialize Text Projection</h4>
+          <ol class="algorithm">
+            <li>Let <var>output</var> be the empty string.</li>
+            <li>
+              For each visible entry in ascending <a>text index</a> order:
+              <ol>
+                <li>
+                  If the entry value is not a string, continue to the next
+                  visible entry.
+                </li>
+                <li>Append the entry value to <var>output</var>.</li>
+              </ol>
+            </li>
+            <li>Return <var>output</var> as the <a>text projection</a>.</li>
+          </ol>
+        </section>
+      </section>
+
+      <section>
+        <h3>CRUD</h3>
+
+        <section>
+          <h4 id="crtext-create">Create</h4>
+          <ol class="algorithm">
+            <li>
+              Let <var>replica</var> be a new underlying CR-List replica
+              hydrated from the supplied optional <a>snapshot</a> [[CRLIST]].
+            </li>
+            <li>
+              Ignore malformed snapshot entries rejected by the underlying
+              replica.
+            </li>
+            <li>
+              Treat visible string payloads as <a>text value</a>(s). Non-string
+              payloads MUST NOT contribute to the <a>text projection</a>.
+            </li>
+            <li>Return <var>replica</var> as a <a>CR-Text replica</a>.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h4 id="crtext-read">Read</h4>
+          <ol class="algorithm">
+            <li>
+              To read one <a>text value</a>, inspect the visible entry at the
+              supplied <a>text index</a>.
+            </li>
+            <li>
+              If the index is out of bounds or the visible entry value is not a
+              string, return <code>undefined</code>.
+            </li>
+            <li>
+              Return a detached structured clone of that visible string value.
+            </li>
+            <li>
+              To read the full string, run
+              <a href="#materialize-text-projection"
+                >materialize text projection</a
+              >.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h4 id="crtext-insert">Insert</h4>
+          <ol class="algorithm">
+            <li>
+              If <var>index</var> is not a number or <var>characters</var> is
+              not a string, then fail with <code>BAD_PARAMS</code>.
+            </li>
+            <li>
+              Let <var>values</var> be the result of running
+              <a href="#segment-characters">segment characters</a> with
+              <var>characters</var>.
+            </li>
+            <li>If <var>values</var> is empty, return no change.</li>
+            <li>
+              Let <var>targetIndex</var> be <var>index</var> and let
+              <var>mode</var> be <code>after</code>.
+            </li>
+            <li>
+              If <var>index</var> is <code>-1</code>, then:
+              <ol>
+                <li>Set <var>targetIndex</var> to <code>0</code>.</li>
+                <li>
+                  If the replica has at least one visible entry, set
+                  <var>mode</var> to <code>before</code>.
+                </li>
+              </ol>
+            </li>
+            <li>
+              Insert <var>values</var> into the underlying ordered replica at
+              <var>targetIndex</var> using <var>mode</var> [[CRLIST]].
+            </li>
+            <li>
+              If the underlying ordered replica reports no mutation, return no
+              change.
+            </li>
+            <li>Return the produced <a>delta</a> and <a>change patch</a>.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h4 id="crtext-remove">Remove</h4>
+          <ol class="algorithm">
+            <li>
+              If <var>index</var> is not a number or <var>removeCount</var> is
+              not a number, then fail with <code>BAD_PARAMS</code>.
+            </li>
+            <li>
+              Let <var>endIndex</var> be <var>index</var> plus
+              <var>removeCount</var>.
+            </li>
+            <li>
+              Delete the visible range
+              <code>[index, endIndex)</code> from the underlying ordered replica
+              [[CRLIST]].
+            </li>
+            <li>If the effective deleted range is empty, return no change.</li>
+            <li>
+              Return the produced <a>delta</a> and <a>change patch</a>. Deleted
+              indexes in the patch map to <code>undefined</code>.
+            </li>
+          </ol>
+        </section>
+      </section>
+
+      <section>
+        <h3>MAGS</h3>
+
+        <section>
+          <h4 id="crtext-merge">Merge</h4>
+          <ol class="algorithm">
+            <li>
+              If the supplied candidate is not a record, return no change.
+            </li>
+            <li>
+              Merge the candidate into the underlying ordered replica
+              [[CRLIST]].
+            </li>
+            <li>
+              If no visible state was adopted or removed, return no change.
+            </li>
+            <li>
+              Return the minimal <a>change patch</a> for the affected visible
+              text indexes.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h4 id="crtext-acknowledge">Acknowledge</h4>
+          <ol class="algorithm">
+            <li>
+              If the local replica retains no tombstones, return no
+              <a>acknowledgement frontier</a>.
+            </li>
+            <li>
+              Iterate the retained tombstones and keep the lexicographically
+              greatest valid UUID version 7 identifier [[RFC9562]].
+            </li>
+            <li>
+              Return that identifier as the replica's
+              <a>acknowledgement frontier</a>.
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h4 id="crtext-garbage-collect">Garbage Collect</h4>
+          <ol class="algorithm">
+            <li>If the supplied frontier input is not a list, return.</li>
+            <li>Sort the supplied frontiers lexicographically.</li>
+            <li>
+              Let <var>boundary</var> be the smallest supplied frontier that is
+              a valid UUID version 7 identifier [[RFC9562]].
+            </li>
+            <li>If no such frontier exists, return.</li>
+            <li>
+              Remove every retained tombstone whose identifier is less than or
+              equal to <var>boundary</var>.
+            </li>
+          </ol>
+          <p class="note">
+            This algorithm is only safe when the caller supplies acknowledgement
+            frontiers covering every replica whose future convergence must still
+            be preserved.
+          </p>
+        </section>
+
+        <section>
+          <h4 id="crtext-snapshot">Snapshot</h4>
+          <ol class="algorithm">
+            <li>
+              For each current live entry, create a detached snapshot entry
+              containing its UUID version 7 identifier, value, and predecessor.
+            </li>
+            <li>
+              Assemble those entries into the snapshot's
+              <code>values</code> list.
+            </li>
+            <li>
+              Assemble all retained tombstones into the snapshot's
+              <code>tombstones</code> list.
+            </li>
+            <li>Return the resulting <a>snapshot</a>.</li>
+          </ol>
+        </section>
+      </section>
+    </section>
+
+    <section>
+      <h2>Reference JavaScript Binding</h2>
+      <p>
+        This section defines one conforming JavaScript binding for the model
+        above.
+      </p>
+
+      <section>
+        <h3>API Summary</h3>
+        <pre class="idl">
+[Exposed=*]
+interface CRText {
+  constructor(optional object snapshot = {});
+  readonly attribute unsigned long size;
+  undefined insertAfter(long index, DOMString characters);
+  undefined removeAfter(long index, long removeCount);
+  undefined merge(optional object delta = {});
+  undefined acknowledge();
+  undefined garbageCollect(sequence&lt;DOMString&gt; frontiers);
+  undefined snapshot();
+  undefined addEventListener(
+    DOMString type,
+    EventListener? listener,
+    optional (AddEventListenerOptions or boolean) options = {}
+  );
+  undefined removeEventListener(
+    DOMString type,
+    EventListener? listener,
+    optional (EventListenerOptions or boolean) options = {}
+  );
+  object toJSON();
+  stringifier DOMString ();
+  iterable&lt;DOMString&gt;;
+};
+
+dictionary CRTextSnapshotValueEntry {
+  required DOMString uuidv7;
+  required DOMString value;
+  required DOMString predecessor;
+};
+
+dictionary CRTextSnapshot {
+  required sequence&lt;CRTextSnapshotValueEntry&gt; values;
+  required sequence&lt;DOMString&gt; tombstones;
+};
+
+dictionary CRTextDelta {
+  sequence&lt;CRTextSnapshotValueEntry&gt; values;
+  sequence&lt;DOMString&gt; tombstones;
+};
+
+typedef record&lt;DOMString, any&gt; CRTextChange;
+typedef DOMString CRTextAck;
+        </pre>
+        <p>
+          The constructor and <a data-link-for="CRText">merge()</a> method are
+          typed as taking generic objects in the coarse Web IDL summary above so
+          that the IDL matches the permissive JavaScript ingress behavior. The
+          expected object shapes are <code>CRTextSnapshot</code> and
+          <code>CRTextDelta</code>.
+        </p>
+        <p>
+          <code>size</code> returns the current number of visible
+          <a>text value</a>(s). <code>valueOf()</code>,
+          <code>Symbol.toPrimitive</code>, runtime inspect hooks, and primitive
+          coercion expose the current <a>text projection</a>.
+        </p>
+        <p>
+          When the current <a>snapshot</a> is JSON-compatible,
+          <code>JSON.stringify(text)</code> serializes the binding through that
+          snapshot. <code>toString()</code> returns the JSON string form of the
+          current snapshot, while <code>valueOf()</code> returns the visible
+          text string.
+        </p>
+      </section>
+
+      <section>
+        <h3>Errors</h3>
+        <p>
+          The JavaScript binding throws <code>CRTextError</code> with a string
+          <code>code</code> attribute for local API misuse.
+        </p>
+        <dl>
+          <dt><code>BAD_PARAMS</code></dt>
+          <dd>
+            Thrown when <a data-link-for="CRText">insertAfter()</a> or
+            <a data-link-for="CRText">removeAfter()</a> receives arguments of
+            the wrong runtime types.
+          </dd>
+        </dl>
+      </section>
+
+      <section>
+        <h3>Events</h3>
+        <p>
+          The JavaScript binding maintains an internal
+          <code>EventTarget</code> object as defined by DOM [[DOM]].
+        </p>
+        <p>
+          The binding forwards
+          <a data-link-for="CRText">addEventListener()</a> and
+          <a data-link-for="CRText">removeEventListener()</a> to that internal
+          event target. Local mutations, merges, acknowledgement emission, and
+          snapshot emission dispatch synthetic events through the same target.
+        </p>
+        <p>
+          The JavaScript binding defines four synthetic event types. Each is a
+          <code>CustomEvent</code> object whose <code>detail</code> attribute is
+          initialized as described below [[DOM]].
+        </p>
+        <dl>
+          <dt><dfn>delta event</dfn></dt>
+          <dd>
+            A <code>CustomEvent</code> whose <code>detail</code> is a
+            <a>delta</a>. The binding dispatches this event for local insertions
+            and removals that produce gossip material.
+          </dd>
+          <dt><dfn>change event</dfn></dt>
+          <dd>
+            A <code>CustomEvent</code> whose <code>detail</code> is a
+            <a>change patch</a>.
+          </dd>
+          <dt><dfn>ack event</dfn></dt>
+          <dd>
+            A <code>CustomEvent</code> whose <code>detail</code> is the current
+            <a>acknowledgement frontier</a> produced when
+            <a data-link-for="CRText">acknowledge()</a> is invoked and a
+            frontier exists.
+          </dd>
+          <dt><dfn>snapshot event</dfn></dt>
+          <dd>
+            A <code>CustomEvent</code> whose <code>detail</code> is the full
+            current <a>snapshot</a> produced when
+            <a data-link-for="CRText">snapshot()</a> is invoked.
+          </dd>
+        </dl>
+        <p>
+          <a data-link-for="CRText">insertAfter()</a> and
+          <a data-link-for="CRText">removeAfter()</a> MUST dispatch
+          <a>delta event</a> before <a>change event</a> when the operation
+          changes visible text. <a data-link-for="CRText">merge()</a> MUST
+          dispatch only a <a>change event</a> when the visible text projection
+          changes. <a data-link-for="CRText">acknowledge()</a> MUST dispatch an
+          <a>ack event</a> when a frontier exists, and
+          <a data-link-for="CRText">snapshot()</a> MUST dispatch a
+          <a>snapshot event</a>.
+        </p>
+      </section>
+
+      <section>
+        <h3>Methods</h3>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">Constructor</dfn></h5>
+          <p>
+            Run <a href="#crtext-create">Create</a> with the optional
+            <a>snapshot</a>.
+          </p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">size</dfn></h5>
+          <p>Return the current number of visible <a>text value</a>(s).</p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">insertAfter()</dfn></h5>
+          <p>
+            Run <a href="#crtext-insert">Insert</a> with the supplied index and
+            characters. Dispatch the resulting <a>delta event</a> and
+            <a>change event</a>. Passing <code>-1</code> inserts at the
+            beginning of the document.
+          </p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">removeAfter()</dfn></h5>
+          <p>
+            Run <a href="#crtext-remove">Remove</a> with the supplied index and
+            remove count. Dispatch the resulting <a>delta event</a> and
+            <a>change event</a> when the visible text changes.
+          </p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">merge()</dfn></h5>
+          <p>
+            Run <a href="#crtext-merge">Merge</a> with the supplied
+            <a>delta</a>. If the visible text changes, dispatch a
+            <a>change event</a> whose detail is the minimal visible patch.
+          </p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">acknowledge()</dfn></h5>
+          <p>
+            Run <a href="#crtext-acknowledge">Acknowledge</a> and dispatch an
+            <a>ack event</a> when a frontier exists.
+          </p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">garbageCollect()</dfn></h5>
+          <p>
+            Run <a href="#crtext-garbage-collect">Garbage Collect</a> with the
+            supplied list of acknowledgement frontiers.
+          </p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">snapshot()</dfn></h5>
+          <p>
+            Run <a href="#crtext-snapshot">Snapshot</a> and dispatch a
+            <a>snapshot event</a> with the resulting value. The method returns
+            <code>undefined</code>.
+          </p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">@@iterator</dfn></h5>
+          <p>
+            Iterate the current visible <a>text value</a>(s) in ascending
+            <a>text index</a> order.
+          </p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">toJSON()</dfn></h5>
+          <p>
+            Return the same detached structured-clone-compatible shape as
+            <a>snapshot</a>. This is the value used by
+            <code>JSON.stringify</code>.
+          </p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5><dfn class="export">toString()</dfn></h5>
+          <p>Return the JSON string form of the current <a>snapshot</a>.</p>
+        </section>
+
+        <section data-dfn-for="CRText">
+          <h5>
+            <dfn class="export">addEventListener()</dfn> and
+            <dfn class="export">removeEventListener()</dfn>
+          </h5>
+          <p>
+            Forward listener registration and listener removal to the binding's
+            internal <code>EventTarget</code> object using the provided type,
+            listener, and options values.
+          </p>
+        </section>
+      </section>
+    </section>
+  </body>
+</html>
