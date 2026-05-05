@@ -25,8 +25,10 @@
     />
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
     <link rel="dns-prefetch" href="//cdn.simpleicons.org" />
+    <link rel="dns-prefetch" href="//respec.org" />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
     <link rel="preconnect" href="https://cdn.simpleicons.org" crossorigin />
+    <link rel="preconnect" href="https://respec.org" crossorigin />
     <link rel="modulepreload" href="./index.js" />
     <link
       rel="preload"
@@ -220,7 +222,8 @@
             "relatedLink": [
               "https://github.com/sovereignbase/convergent-replicated-text",
               "https://jsr.io/@sovereignbase/convergent-replicated-text",
-              "https://www.npmjs.com/package/@sovereignbase/convergent-replicated-text"
+              "https://www.npmjs.com/package/@sovereignbase/convergent-replicated-text",
+              "https://sovereignbase.dev/convergent-replicated-text/spec/"
             ]
           }
         ]
@@ -462,6 +465,10 @@
         flex: 0 0 1rem;
       }
 
+      .links img.white-icon {
+        filter: brightness(0) invert(1);
+      }
+
       [contenteditable] {
         white-space: pre-wrap;
       }
@@ -506,6 +513,14 @@
             />
             Docs</a
           >
+          <a href="https://sovereignbase.dev/convergent-replicated-text/spec/">
+            <img
+              class="white-icon"
+              src="https://respec.org/respec-logo.png"
+              alt=""
+            />
+            spec
+          </a>
         </nav>
 
         <h1>A text crdt for Sovereignbase</h1>

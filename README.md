@@ -9,6 +9,7 @@ Convergent Replicated Text (CR-Text), a delta CRDT for text value state.
 
 - [Try the demo](https://sovereignbase.dev/convergent-replicated-text/)
 - [Check the docs](https://sovereignbase.dev/convergent-replicated-text/docs/)
+- [Read the specification](https://sovereignbase.dev/convergent-replicated-text/spec/)
 
 ## Compatibility
 
