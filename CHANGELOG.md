@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/sovereignbase/convergent-replicated-text/compare/v1.0.3...v1.0.4) (2026-05-10)
+
+
+### Bug Fixes
+
+* bumb dependencies ([c10ad41](https://github.com/sovereignbase/convergent-replicated-text/commit/c10ad41c559aa3d3681296476777ac481962bd07))
+
 ## [1.0.3](https://github.com/sovereignbase/convergent-replicated-text/compare/v1.0.2...v1.0.3) (2026-05-03)
 
 
