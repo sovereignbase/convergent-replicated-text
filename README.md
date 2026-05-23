@@ -160,12 +160,12 @@ npm run bench
 
 Last measured on Node `v22.14.0` (`win32 x64`).
 
-| group        | scenario                               |  chars | workload                               |    ops |       ms | ms/op |   ops/sec |
-| ------------ | -------------------------------------- | -----: | -------------------------------------- | -----: | -------: | ----: | --------: |
-| `throughput` | `typing / append random article`       | 12,500 | `1010 append operations`               | 24,240 | 2,301.96 |  0.09 | 10,530.14 |
-| `throughput` | `editing / random inserts and deletes` | 15,153 | `2000 random insert/remove operations` | 24,000 | 6,638.76 |  0.28 |  3,615.13 |
-| `projection` | `snapshot / toJSON revised article`    | 15,153 | `detached snapshot`                    |    240 | 6,020.95 | 25.09 |     39.86 |
-| `projection` | `valueOf / materialize current string` | 15,153 | `string projection`                    |    360 | 8,024.94 | 22.29 |     44.86 |
+| group      | scenario                             |  chars | workload                             |    ops |       ms | ms/op |   ops/sec |
+| ---------- | ------------------------------------ | -----: | ------------------------------------ | -----: | -------: | ----: | --------: |
+| throughput | typing / append random article       | 12,500 | 1010 append operations               | 24,240 | 2,075.09 |  0.09 | 11,681.44 |
+| throughput | editing / random inserts and deletes | 15,153 | 2000 random insert/remove operations | 24,000 | 3,354.05 |  0.14 |  7,155.53 |
+| projection | snapshot / toJSON revised article    | 15,153 | detached snapshot                    |    240 | 1,809.78 |  7.54 |    132.61 |
+| projection | valueOf / materialize current string | 15,153 | string projection                    |    360 | 1,099.18 |  3.05 |    327.52 |
 
 ## License
 
