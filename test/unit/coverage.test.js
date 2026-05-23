@@ -529,16 +529,18 @@ test('coverage: ChangeStreamAdapter updates input and textarea controls', () => 
   try {
     const doc = new MockDocument()
     mock.setDocument(doc)
+    const replica = new CRText()
 
     const input = new MockInputElement(doc)
     input.value = 'abcd'
     ChangeStreamAdapter(
       new CustomEvent('change', {
-        detail: { 1: undefined, 2: 'X' },
+        detail: { 1: undefined },
       }),
-      input
+      input,
+      replica
     )
-    assert.equal(input.value, 'acXd')
+    assert.equal(input.value, 'acd')
 
     const textarea = new MockTextAreaElement(doc)
     textarea.value = 'xy'
@@ -546,9 +548,21 @@ test('coverage: ChangeStreamAdapter updates input and textarea controls', () => 
       new CustomEvent('change', {
         detail: { 2: '\n' },
       }),
-      textarea
+      textarea,
+      replica
     )
     assert.equal(textarea.value, 'xy\n')
+
+    const fallbackText = new CRText()
+    fallbackText.insertAfter(-1, 'full value')
+    ChangeStreamAdapter(
+      new CustomEvent('change', {
+        detail: { 0: 'ignored', 1: 'ignored' },
+      }),
+      textarea,
+      fallbackText
+    )
+    assert.equal(textarea.value, 'full value')
   } finally {
     mock.restore()
   }
@@ -559,6 +573,7 @@ test('coverage: ChangeStreamAdapter updates contenteditable text and caret state
   try {
     const doc = new MockDocument()
     mock.setDocument(doc)
+    const replica = new CRText()
     const host = new MockElement('div', doc)
     const oldAnchor = doc.createElement('span')
     oldAnchor.dataset.caretAnchor = 'true'
@@ -570,15 +585,27 @@ test('coverage: ChangeStreamAdapter updates contenteditable text and caret state
 
     ChangeStreamAdapter(
       new CustomEvent('change', {
-        detail: { 1: undefined, 3: 'Z' },
+        detail: { 4: 'Z' },
       }),
-      host
+      host,
+      replica
     )
 
     assert.equal(host.querySelector('[data-caret-anchor="true"]'), null)
-    assert.equal(host.firstChild.data, 'acdZ')
+    assert.equal(host.firstChild.data, 'abcdZ')
     assert.equal(doc.selection.addedRanges.length, 1)
     assert.equal(doc.selection.removed, 1)
+
+    const fallbackText = new CRText()
+    fallbackText.insertAfter(-1, 'full host')
+    ChangeStreamAdapter(
+      new CustomEvent('change', {
+        detail: { 0: 'ignored', 1: 'ignored' },
+      }),
+      host,
+      fallbackText
+    )
+    assert.equal(host.textContent, 'full host')
   } finally {
     mock.restore()
   }
@@ -589,15 +616,28 @@ test('coverage: ChangeStreamAdapter handles unfocused hosts missing selections a
   try {
     const doc = new MockDocument()
     mock.setDocument(doc)
+    const replica = new CRText()
 
     const unfocusedHost = new MockElement('div', doc)
     ChangeStreamAdapter(
       new CustomEvent('change', {
         detail: { 0: 'A' },
       }),
-      unfocusedHost
+      unfocusedHost,
+      replica
     )
     assert.equal(unfocusedHost.firstChild.data, 'A')
+
+    const removalHost = new MockElement('div', doc)
+    removalHost.append(doc.createTextNode('abc'))
+    ChangeStreamAdapter(
+      new CustomEvent('change', {
+        detail: { 1: undefined },
+      }),
+      removalHost,
+      replica
+    )
+    assert.equal(removalHost.firstChild.data, 'ac')
 
     const focusedHost = new MockElement('div', doc)
     focusedHost.append(doc.createTextNode('a'))
@@ -607,7 +647,8 @@ test('coverage: ChangeStreamAdapter handles unfocused hosts missing selections a
       new CustomEvent('change', {
         detail: { 1: '\n' },
       }),
-      focusedHost
+      focusedHost,
+      replica
     )
     assert.equal(focusedHost.firstChild.data, 'a\n')
 
@@ -617,7 +658,8 @@ test('coverage: ChangeStreamAdapter handles unfocused hosts missing selections a
       new CustomEvent('change', {
         detail: { 2: '\n' },
       }),
-      focusedHost
+      focusedHost,
+      replica
     )
     const anchor = focusedHost.querySelector('[data-caret-anchor="true"]')
     assert(anchor, 'expected caret anchor for trailing newline')

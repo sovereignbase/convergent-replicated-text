@@ -1,3 +1,5 @@
+import type { CRTextEventMap } from '../.types/type.js'
+
 const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
 
 /**
@@ -8,4 +10,15 @@ const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
  */
 export function transformStringToGraphemeArray(value: string): string[] {
   return Array.from(segmenter.segment(value), (x) => x.segment)
+}
+
+/**
+ * Dispatches a typed CRText event payload through an EventTarget.
+ */
+export function dispatchCRTextEvent<K extends keyof CRTextEventMap>(
+  eventTarget: EventTarget,
+  type: K,
+  detail: CRTextEventMap[K]
+): void {
+  void eventTarget.dispatchEvent(new CustomEvent(type, { detail }))
 }

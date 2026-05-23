@@ -9,7 +9,10 @@ import {
   __snapshot,
 } from '@sovereignbase/convergent-replicated-list'
 import { CRTextError } from '../.errors/class.js'
-import { transformStringToGraphemeArray } from '../.helpers/index.js'
+import {
+  dispatchCRTextEvent,
+  transformStringToGraphemeArray,
+} from '../.helpers/index.js'
 import type {
   CRTextEventMap,
   CRTextEventListenerFor,
@@ -17,7 +20,7 @@ import type {
   CRTextSnapshot,
   CRTextDelta,
   CRTextAck,
-} from '../.types/index.js'
+} from '../.types/type.js'
 
 /**
  * Represents a convergent replicated text document backed by CR-List state.
@@ -32,7 +35,7 @@ export class CRText {
    * @param snapshot An optional detached snapshot used to hydrate the initial state.
    */
   constructor(snapshot?: CRTextSnapshot) {
-    Object.defineProperties(this, {
+    void Object.defineProperties(this, {
       state: {
         value: __create<string>(snapshot),
         enumerable: false,
@@ -83,14 +86,8 @@ export class CRText {
     )
     if (!result) return
     const { delta, change } = result
-    if (delta)
-      void this.eventTarget.dispatchEvent(
-        new CustomEvent('delta', { detail: delta })
-      )
-    if (change)
-      void this.eventTarget.dispatchEvent(
-        new CustomEvent('change', { detail: change })
-      )
+    if (delta) void dispatchCRTextEvent(this.eventTarget, 'delta', delta)
+    if (change) void dispatchCRTextEvent(this.eventTarget, 'change', change)
   }
 
   /**
@@ -109,14 +106,8 @@ export class CRText {
     const result = __delete<string>(this.state, index, index + removeCount)
     if (!result) return
     const { delta, change } = result
-    if (delta)
-      void this.eventTarget.dispatchEvent(
-        new CustomEvent('delta', { detail: delta })
-      )
-    if (change)
-      void this.eventTarget.dispatchEvent(
-        new CustomEvent('change', { detail: change })
-      )
+    if (delta) void dispatchCRTextEvent(this.eventTarget, 'delta', delta)
+    if (change) void dispatchCRTextEvent(this.eventTarget, 'change', change)
   }
 
   /**
@@ -128,11 +119,7 @@ export class CRText {
    */
   merge(delta: CRTextDelta): void {
     const change = __merge(this.state, delta)
-    if (change) {
-      void this.eventTarget.dispatchEvent(
-        new CustomEvent('change', { detail: change })
-      )
-    }
+    if (change) void dispatchCRTextEvent(this.eventTarget, 'change', change)
   }
 
   /**
@@ -142,11 +129,7 @@ export class CRText {
    */
   acknowledge(): void {
     const ack = __acknowledge(this.state)
-    if (ack) {
-      void this.eventTarget.dispatchEvent(
-        new CustomEvent('ack', { detail: ack })
-      )
-    }
+    if (ack) void dispatchCRTextEvent(this.eventTarget, 'ack', ack)
   }
 
   /**
@@ -163,11 +146,8 @@ export class CRText {
    */
   snapshot(): void {
     const snapshot = __snapshot<string>(this.state)
-    if (snapshot) {
-      this.eventTarget.dispatchEvent(
-        new CustomEvent('snapshot', { detail: snapshot })
-      )
-    }
+    if (snapshot)
+      void dispatchCRTextEvent(this.eventTarget, 'snapshot', snapshot)
   }
   /**
    * Returns a detached structured-clone-compatible snapshot of this list.

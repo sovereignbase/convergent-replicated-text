@@ -76,11 +76,11 @@ const elements = [
   document.getElementById('textarea-element'),
   document.getElementById('input-element'),
   document.getElementById('html-element'),
-]
+].filter((element) => element instanceof HTMLElement)
 
 text.addEventListener('change', (event) => {
   for (const element of elements) {
-    void ChangeStreamAdapter(event, element)
+    void ChangeStreamAdapter(event, element, text)
   }
   void text.snapshot()
   void text.acknowledge()
@@ -88,8 +88,8 @@ text.addEventListener('change', (event) => {
 
 for (const element of elements) {
   element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement
-    ? (element.value = text)
-    : (element.textContent = text)
+    ? (element.value = text.valueOf())
+    : (element.textContent = text.valueOf())
 
   void element.addEventListener(
     'beforeinput',
@@ -121,7 +121,7 @@ station.addEventListener('message', (ev) => {
 - `toJSON()` returns a detached structured-clone-compatible snapshot and `toString()` serializes that snapshot as JSON.
 - `valueOf()`, `Symbol.toPrimitive`, iteration, and runtime inspect hooks expose the current visible string projection.
 - `BeforeInputStreamAdapter()` prevents the browser's default DOM mutation and translates `beforeinput` events into `insertAfter()` / `removeAfter()` calls.
-- `ChangeStreamAdapter()` applies `change` patches to `<input>`, `<textarea>`, and `contenteditable` hosts and restores the caret for focused editable elements.
+- `ChangeStreamAdapter()` applies `change` patches to `<input>`, `<textarea>`, and `contenteditable` hosts, restores the caret for focused editable elements during incremental patching, and uses the supplied `CRText` instance as a full-projection fallback for multi-entry patches.
 
 ### Convergence and compaction
 

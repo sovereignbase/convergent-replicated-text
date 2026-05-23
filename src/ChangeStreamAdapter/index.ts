@@ -10,6 +10,7 @@ import { CRText } from '../CRText/class.js'
  *
  * @param changeEvent The `change` event emitted by `CRText`.
  * @param htmlElement The editable element that should reflect the change.
+ * @param crText The replicated text instance used as the full projection source for multi-entry patches.
  */
 export function ChangeStreamAdapter(
   changeEvent: CustomEvent<CRListChange<string>>,

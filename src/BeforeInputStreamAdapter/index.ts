@@ -1,4 +1,4 @@
-import type { TextSelection, DOMTranslation } from '../.types/index.js'
+import type { TextSelection, DOMTranslation } from '../.types/type.js'
 import { CRText } from '../CRText/class.js'
 
 /**
