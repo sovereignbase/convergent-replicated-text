@@ -43,7 +43,7 @@ function flushManualUi() {
   for (const { detail, sourceElement } of pendingLocalChanges.splice(0)) {
     for (const element of elements) {
       if (element === sourceElement) continue
-      void ChangeStreamAdapter({ detail }, element)
+      void ChangeStreamAdapter({ detail }, element, text)
     }
   }
 }
@@ -84,7 +84,7 @@ function setSyncMode(nextMode) {
 text.addEventListener('change', (event) => {
   if (syncMode === 'manual' && !isFlushingManualSync) {
     if (manualInputElement) {
-      void ChangeStreamAdapter(event, manualInputElement)
+      void ChangeStreamAdapter(event, manualInputElement, text)
     }
     pendingLocalChanges.push({
       detail: event.detail,
@@ -92,7 +92,7 @@ text.addEventListener('change', (event) => {
     })
   } else {
     for (const element of elements) {
-      void ChangeStreamAdapter(event, element)
+      void ChangeStreamAdapter(event, element, text)
     }
   }
 

@@ -1,4 +1,5 @@
 import type { CRListChange } from '@sovereignbase/convergent-replicated-list'
+import { CRText } from '../CRText/class.js'
 
 /**
  * Applies a `CRText` change event to an editable DOM host.
@@ -12,9 +13,19 @@ import type { CRListChange } from '@sovereignbase/convergent-replicated-list'
  */
 export function ChangeStreamAdapter(
   changeEvent: CustomEvent<CRListChange<string>>,
-  htmlElement: HTMLElement
+  htmlElement: HTMLElement,
+  crText: CRText
 ): void {
   const entries = Object.entries(changeEvent.detail)
+
+  if (entries.length > 1) {
+    htmlElement instanceof HTMLInputElement ||
+    htmlElement instanceof HTMLTextAreaElement
+      ? (htmlElement.value = crText.valueOf())
+      : (htmlElement.textContent = crText.valueOf())
+    return
+  }
+
   const removals = [...entries].sort(([a], [b]) => Number(b) - Number(a))
   const inserts = [...entries].sort(([a], [b]) => Number(a) - Number(b))
 

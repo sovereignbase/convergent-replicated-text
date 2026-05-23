@@ -86,7 +86,7 @@ export function translateDOMBeforeInputEvent(
   let removeIndex = selectionStart
   let removeCount = selectionEnd - selectionStart
 
-  if (selectionStart === selectionEnd) {
+  if (selectionStart === selectionEnd && removeIndex > 0) {
     if (ev.inputType === 'deleteContentBackward') {
       removeIndex = Math.max(0, selectionStart - 1)
       removeCount = 1
