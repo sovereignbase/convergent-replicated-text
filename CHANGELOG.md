@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/sovereignbase/convergent-replicated-text/compare/v1.1.0...v1.1.1) (2026-05-23)
+
+
+### Bug Fixes
+
+* have to just get actions to re-run because github is big pile of .... ([c48c3f1](https://github.com/sovereignbase/convergent-replicated-text/commit/c48c3f1579f610f405f1bcecab5c7ecc3f705ce3))
+
 ## [1.1.0](https://github.com/sovereignbase/convergent-replicated-text/compare/v1.0.4...v1.1.0) (2026-05-23)
 
 
