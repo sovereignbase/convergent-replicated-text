@@ -88,6 +88,10 @@
             name: 'GPT-5.4',
             url: 'https://openai.com/en-US/index/introducing-gpt-5-4/',
           },
+          {
+            name: 'GPT-5.5',
+            url: 'https://openai.com/index/introducing-gpt-5-5/',
+          },
         ],
         xref: 'web-platform',
         lint: {
@@ -990,73 +994,6 @@ typedef DOMString CRTextAck;
             listener, and options values.
           </p>
         </section>
-      </section>
-
-      <section>
-        <h3>DOM Adapter Helpers</h3>
-        <p>
-          The reference JavaScript binding also exports helper functions for
-          browser editing hosts. These helpers are not part of the CR-Text data
-          model; they translate DOM editing events and apply CR-Text change
-          patches to DOM elements.
-        </p>
-        <pre class="idl">
-dictionary TextSelection {
-  required long selectionStart;
-  required long selectionEnd;
-};
-
-dictionary InsertOperation {
-  required long index;
-  required DOMString characters;
-};
-
-dictionary RemoveOperation {
-  required long index;
-  required long removeCount;
-};
-
-dictionary DOMTranslation {
-  required (InsertOperation or boolean) insert;
-  required (RemoveOperation or boolean) remove;
-};
-
-(DOMTranslation or boolean) translateDOMBeforeInputEvent(InputEvent event);
-undefined BeforeInputStreamAdapter(InputEvent beforeInputEvent, CRText crText);
-undefined ChangeStreamAdapter(
-  CustomEvent changeEvent,
-  HTMLElement htmlElement,
-  CRText crText
-);
-        </pre>
-        <p>
-          <code>translateDOMBeforeInputEvent()</code> returns
-          <code>false</code> when the event target is not an
-          <code>HTMLElement</code>. Otherwise it returns a
-          <code>DOMTranslation</code> containing an insertion operation, a
-          removal operation, both, or neither.
-        </p>
-        <p>
-          <code>BeforeInputStreamAdapter()</code> prevents the intercepted
-          <code>beforeinput</code> event's default DOM mutation, translates the
-          event, and applies the translated operations to the supplied
-          <code>CRText</code> instance.
-        </p>
-        <p>
-          <code>ChangeStreamAdapter()</code> applies a
-          <a>change patch</a> to an <code>HTMLInputElement</code>,
-          <code>HTMLTextAreaElement</code>, or other editable
-          <code>HTMLElement</code>. When the patch contains multiple entries,
-          the adapter replaces the host content with the supplied
-          <code>CRText</code> instance's current
-          <a>text projection</a>.
-        </p>
-        <p>
-          DOM selection offsets are the offsets reported by the host DOM
-          element or active document selection. CR-Text insertion and removal
-          operations are still interpreted by the replicated text instance
-          according to <a>text index</a> semantics.
-        </p>
       </section>
     </section>
   </body>
