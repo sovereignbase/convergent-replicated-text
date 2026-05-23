@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/sovereignbase/convergent-replicated-text/compare/v1.0.4...v1.1.0) (2026-05-23)
+
+
+### Features
+
+* optimize adapters render performance for large strings. ([2367925](https://github.com/sovereignbase/convergent-replicated-text/commit/2367925fb3eeafa137ebafc2bbd8dae1c4fd4d56))
+* optimize adapters render performance for large strings. ([c186a82](https://github.com/sovereignbase/convergent-replicated-text/commit/c186a8264de9a26cc45b7dc8da2f08caa088841c))
+
 ## [1.0.4](https://github.com/sovereignbase/convergent-replicated-text/compare/v1.0.3...v1.0.4) (2026-05-10)
 
 
